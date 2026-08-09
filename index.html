@@ -584,24 +584,21 @@
         // ═══════════════════════════════════════
         //  今日页 · demo-today-ring 版（唯一实现）
         // ═══════════════════════════════════════
-var tdDates = (function(){
+// 动态日历：当前年月（重新开始记录，无历史训练标记）
+  var tdDates = (function(){
+    var now = new Date();
+    var y = now.getFullYear(), m = now.getMonth();
+    var firstDay = new Date(y, m, 1).getDay();           // 0 = 周日
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
     var WEEK = ['日','一','二','三','四','五','六'];
-    var train = { 21:true, 22:true, 24:true, 26:true };
     var arr = [];
-    for (var d = 1; d <= 31; d++){
-      arr.push({ day: WEEK[(3 + d - 1) % 7], date: String(d), dot: !!train[d] });
+    for (var d = 1; d <= daysInMonth; d++){
+      arr.push({ day: WEEK[(firstDay + d - 1) % 7], date: String(d), dot: false });
     }
     return arr;
   })();
-  var tdSelected = '26';
-  var tdWorkouts = [
-    { name:'平板卧推', meta:'4组 × 10次 × 50kg', type:'力量' },
-    { name:'高位下拉', meta:'4组 × 10次 × 50kg', type:'力量' },
-    { name:'慢跑',     meta:'5.2 km',            type:'有氧' },
-    { name:'深蹲',     meta:'5组 × 12次 × 60kg', type:'力量' },
-    { name:'拉伸放松', meta:'12 min',            type:'有氧' },
-    { name:'卷腹',     meta:'4组 × 20次',        type:'力量' }
-  ];
+  var tdSelected = String(new Date().getDate());          // 选中今天
+  var tdWorkouts = [];                                     // 从空白开始记录
   var tdCompleted = [];
   var tdFilter = '全部';
   var dragMode = false;   // 拖拽模式
@@ -964,7 +961,14 @@ var tdDates = (function(){
   tdRenderCal();
   tdRenderList();
   tdUpdateProgress();
-  var r = document.getElementById('tdCalRow'); if (r) r.scrollLeft = r.scrollWidth;
+  // 滚动到今天并居中显示
+  var r = document.getElementById('tdCalRow');
+  if (r){
+    var cw = r.parentElement ? r.parentElement.clientWidth : 360;
+    var todayIdx = 0;
+    for (var ti = 0; ti < tdDates.length; ti++){ if (tdDates[ti].date === tdSelected){ todayIdx = ti; break; } }
+    r.scrollLeft = Math.max(0, todayIdx * 52 - (cw - 52) / 2);
+  }
 
         // ═══════════════════════════════════════
         //  Tab Switching
