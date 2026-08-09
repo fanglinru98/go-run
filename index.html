@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#F8F6FA">
+    <title>GO RUN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=20260808">
+    <style>
+        #todayPage { display: none; }
+        #todayPage.active { display: block; }
+        #followPage { display: none; }
+        #followPage.active { display: block; }
+        #healthPage { display: none; }
+        #healthPage.active { display: block; }
+        #publishPage { display: none; }
+        #publishPage.active { display: block; }
+        #profilePage { display: none; }
+        #profilePage.active { display: block; }
+        #pageContainer { display: block; }
+        #pageContainer.hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="phone-frame" id="app">
+
+    <!-- ===== 固定头部（preview 风格） ===== -->
+        <!-- ===== 固定头部（preview 风格） ===== -->
+    <div class="fixed-header" id="fixedHeader">
+        <div class="app-header">
+            <h1 id="tdBrandLine" style="margin:0;font-size:29px;font-weight:800;letter-spacing:-.06em;color:#161722;">GO RUN<span style="color:#d9ff76;">.</span></h1>
+        </div>
+    </div>
+
+    <!-- ===== 滚动内容容器 ===== -->
+    <div class="scroll-content" id="scrollContent">
+        <!-- ===== 今日页面 ===== -->
+        <div id="todayPage">
+            <div class="today-wrapper" style="padding:2px 18px 180px;">
+                <!-- 周历玻璃卡 -->
+                <div class="cal-strip">
+                    <div id="tdCalRow"></div>
+                </div>
+                <!-- 今日消耗（方案B：卡片底框 + 大圆环 + 三统计） -->
+                <section class="ring-hero">
+                    <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFB6F6"/><stop offset="100%" stop-color="#A78BFA"/></linearGradient></defs></svg>
+                    <div class="ring-box b-ring">
+                        <svg class="ring-svg" viewBox="0 0 240 240">
+                            <circle class="ring-track" cx="120" cy="120" r="108" stroke-width="16"/>
+                            <circle class="ring-fill" id="ringFill" cx="120" cy="120" r="108" stroke-width="16" stroke-dasharray="678.6" stroke-dashoffset="678.6"/>
+                        </svg>
+                        <div class="ring-center">
+                            <span class="ring-ic">🔥</span>
+                            <div class="ring-num-row"><span class="ring-num" id="kcalNum">0</span><span class="ring-unit">KCAL</span></div>
+                            <span class="ring-label">今日消耗</span>
+                            <span class="ring-sub" id="kcalPct">0%</span>
+                        </div>
+                    </div>
+                    <div class="b-stats">
+                        <div class="b-stat"><b id="statDist">0.0</b><u>KM</u><span>路程</span></div>
+                        <div class="b-stat"><b id="statTime">0</b><u>MIN</u><span>时间</span></div>
+                        <div class="b-stat"><b id="statDone">0</b><u>/6</u><span>完成</span></div>
+                    </div>
+                </section>
+                <!-- 今日运动 -->
+                <section style="margin-top:22px;">
+                    <div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 2px;">
+                        <div><h2 style="font-size:19px;font-weight:800;letter-spacing:-.05em;">今日运动</h2></div>
+                    </div>
+                    <div class="chips" id="tdFilters">
+                        <button class="chip on" data-f="全部">全部</button>
+                        <button class="chip" data-f="力量">力量</button>
+                        <button class="chip" data-f="有氧">有氧</button>
+                        <button class="chip chip-done" id="doneBtn" style="display:none" onclick="window.finishDrag()">完成</button>
+                    </div>
+                    <div class="wk-list" id="tdList"></div>
+                </section>
+            </div>
+        </div>
+        <!-- ===== 跟练页面（内联 HTML · B站视频版，来自 demo-video） ===== -->
+          <div id="followPage">
+            <div class="follow-flex">
+                <div class="search-bar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#9A9AA3" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="#9A9AA3" stroke-width="2" stroke-linecap="round"/></svg>
+                    <input id="courseSearch" placeholder="搜索课程 / 部位 / 教练" oninput="window.searchCourses(this.value)">
+                </div>
+                <div class="sec-title">今日推荐 <span class="more" onclick="window.showToast('根据你的训练偏好推荐')">换一批</span></div>
+                <div class="reco-grid">
+                    <div class="reco-card" onclick="window.openDetail(0)">
+                        <div class="reco-cover" style="background:linear-gradient(135deg,#FFE9FB,#FFB6F6);"><div class="reco-play" onclick="event.stopPropagation();window.openVideoPlayer('BV1s54y1B7JH','帕梅拉｜10分钟腹部训练')"></div><span class="reco-dur">10:00</span></div>
+                        <div class="reco-name">帕梅拉｜10分钟腹部训练</div>
+                        <div class="reco-meta">中等 · 120万</div>
+                    </div>
+                    <div class="reco-card" onclick="window.openDetail(1)">
+                        <div class="reco-cover" style="background:linear-gradient(135deg,#EDE5FC,#C9B8F5);"><div class="reco-play" onclick="event.stopPropagation();window.openVideoPlayer('BV1yK4y1j7vX','全身燃脂 HIIT 进阶')"></div><span class="reco-dur">20:00</span></div>
+                        <div class="reco-name">全身燃脂 HIIT 进阶</div>
+                        <div class="reco-meta">高强度 · 85万</div>
+                    </div>
+                </div>
+                <div class="tab-switch" id="courseTab">
+                    <div class="on" data-t="reco">推荐</div>
+                    <div data-t="fav">我的收藏</div>
+                </div>
+                <div class="chips-row" id="catChips">
+                    <div class="chip on" data-c="all">全部</div>
+                    <div class="chip" data-c="cardio">有氧</div>
+                    <div class="chip" data-c="strength">力量</div>
+                    <div class="chip" data-c="core">核心</div>
+                    <div class="chip" data-c="legs">臀腿</div>
+                    <div class="chip" data-c="hiit">HIIT</div>
+                </div>
+                <div id="courseList"></div>
+                <div class="card" id="emptyState" style="display:none;padding:30px;text-align:center;color:var(--text-3);margin-top:12px;">
+                    <div style="font-size:30px;margin-bottom:8px;"></div>
+                    <div style="font-size:13px;">没有找到相关课程</div>
+                    <div style="font-size:11px;margin-top:4px;">换个关键词或分类试试</div>
+                </div>
+                <div class="sec-title">最近跟练 <span class="more">查看全部</span></div>
+                <div class="recent-row">
+                    <div class="recent-card" onclick="window.showToast('播放记录')"><div class="rc-cover" style="background:linear-gradient(135deg,#FFE9FB,#FFB6F6);"></div><div class="rc-name">蜜桃臀训练</div><div class="rc-sub">昨天 · 10分钟</div></div>
+                    <div class="recent-card" onclick="window.showToast('播放记录')"><div class="rc-cover" style="background:linear-gradient(135deg,#EDE5FC,#C9B8F5);"></div><div class="rc-name">全身燃脂 HIIT</div><div class="rc-sub">周三 · 20分钟</div></div>
+                    <div class="recent-card" onclick="window.showToast('播放记录')"><div class="rc-cover" style="background:linear-gradient(135deg,#C9F9FE,#2A9CFF);"></div><div class="rc-name">核心力量进阶</div><div class="rc-sub">周一 · 25分钟</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 动态页面容器（健康/发布由模块渲染） ===== -->
+        <!-- ===== 健康页面（内联 HTML） ===== -->
+        <div id="healthPage">
+            <div class="health-flex">
+                <div class="sec-title">今日指标</div>
+                <div class="health-row">
+                    <div class="metrics">
+                        <div class="metric"><span class="label">心率</span><span><span class="value">72</span><span class="unit">bpm</span></span></div>
+                        <div class="metric"><span class="label">体脂率</span><span><span class="value">15.2</span><span class="unit">%</span></span></div>
+                        <div class="metric"><span class="label">肌肉量</span><span><span class="value">42.5</span><span class="unit">kg</span></span></div>
+                        <div class="metric"><span class="label">睡眠</span><span class="value">7h 20m</span></div>
+                        <div class="metric"><span class="label">消耗</span><span><span class="value">320</span><span class="unit">kcal</span></span></div>
+                    </div>
+                    <div class="char-card">
+                        <div class="char-placeholder">全身形象预留</div>
+                        <button class="char-btn" onclick="window.showToast('👗 换装功能开发中')">换装</button>
+                    </div>
+                </div>
+                <div class="sec-title" style="font-size:17px;">体重变化</div>
+                <div class="chart-card">
+                    <div class="w-header">
+                        <div class="w-current">72<span class="w-unit">.6 kg</span></div>
+                        <div class="w-change"><div class="w-delta down">−0.4</div><div class="w-period">较上周 ↓</div></div>
+                    </div>
+                    <div class="chart-area" id="chartSvg"></div>
+                    <div class="chart-dates" id="chartDates"></div>
+                    <div class="chart-tabs">
+                        <div class="ct-tab on" data-p="day">日</div>
+                        <div class="ct-tab" data-p="week">周</div>
+                        <div class="ct-tab" data-p="month">月</div>
+                    </div>
+                </div>
+                <div class="sec-title" style="font-size:17px;">饮食记录</div>
+                <div class="diet-card">
+                    <div class="diet-summary">
+                        <div class="ds-item"><div class="ds-num">1,850<span class="ds-unit">kcal</span></div><div class="ds-lbl">摄入</div></div>
+                        <div class="ds-sep"></div>
+                        <div class="ds-item"><div class="ds-num">2,200<span class="ds-unit">kcal</span></div><div class="ds-lbl">消耗</div></div>
+                        <div class="ds-sep"></div>
+                        <div class="ds-item"><div class="ds-num">−350<span class="ds-unit">kcal</span></div><div class="ds-lbl">剩余</div></div>
+                    </div>
+                    <div class="diet-divider"></div>
+                    <div class="diet-meals">
+                        <div class="dm-row"><div class="dm-icon" style="background:rgba(255,182,246,0.25);"></div><div class="dm-info"><div class="dm-name">早餐</div><div class="dm-time">08:30</div></div><div class="dm-kcal">450</div><div class="dm-arrow">›</div></div>
+                        <div class="dm-row"><div class="dm-icon" style="background:rgba(255,140,66,0.18);"></div><div class="dm-info"><div class="dm-name">午餐</div><div class="dm-time">12:15</div></div><div class="dm-kcal">680</div><div class="dm-arrow">›</div></div>
+                        <div class="dm-row"><div class="dm-icon" style="background:rgba(42,156,255,0.15);"></div><div class="dm-info"><div class="dm-name">晚餐</div><div class="dm-time">18:40</div></div><div class="dm-kcal">720</div><div class="dm-arrow">›</div></div>
+                    </div>
+                    <div class="diet-input">
+                        <input type="number" placeholder="摄入 kcal" value="350">
+                        <select><option>早餐</option><option>午餐</option><option>晚餐</option></select>
+                        <button onclick="window.showToast('已记录')">记录</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 发布/记录页面（内联 HTML） ===== -->
+          <div id="publishPage">
+            <div class="publish-flex">
+                <div class="sec-title">记录</div>
+                <div class="pub-photos-row" id="pubPhotosRow"></div>
+                <input type="file" id="pubPhotoInput" accept="image/*" style="display:none" onchange="window.pickPhoto(this)">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <span class="chip on" onclick="window.mood(this)">训练完成</span>
+                    <span class="chip off" onclick="window.mood(this)">有氧打卡</span>
+                    <span class="chip off" onclick="window.mood(this)">拉伸放松</span>
+                    <span class="chip off" onclick="window.mood(this)">突破自我</span>
+                </div>
+                <div style="position:relative;">
+                    <textarea class="pub-text-input" id="pubText" placeholder="记录今天的训练：动作、感受、进步..." maxlength="140" oninput="document.getElementById('pubCount').textContent=this.value.length+'/140'" style="padding-bottom:26px;"></textarea>
+                    <span id="pubCount" style="position:absolute;right:12px;bottom:8px;font-size:10px;color:#9a9aa4;pointer-events:none;">0/140</span>
+                </div>
+                <div class="adv-glass" style="border-radius:16px;cursor:pointer;" onclick="window.toggleAdv()">
+                    <div style="display:flex;align-items:center;gap:10px;padding:14px 15px;">
+                        <span style="font-size:13px;font-weight:700;">进阶数据</span>
+                        <span style="font-size:10px;color:var(--text-3);">体脂 / HBM / 趋势</span>
+                        <div style="margin-left:auto;"><span class="adv-arrow" id="advArrow">▾</span></div>
+                    </div>
+                    <div class="adv-dropdown" id="advDropdown">
+                        <div class="adv-grid">
+                            <label>体重 (kg)<input type="number" id="advWeight" placeholder="--" step="0.1"></label>
+                            <label>体脂率 (%)<input type="number" id="advFat" placeholder="--" step="0.1"></label>
+                            <label>消耗 (kcal)<input type="number" id="advKcal" placeholder="--"></label>
+                            <label>HBM (kg)<input type="number" id="advHbm" placeholder="--" step="0.1"></label>
+                        </div>
+                        <div class="adv-btns">
+                            <button class="adv-auto" onclick="window.autoFillAdv()">自动导入</button>
+                            <button class="adv-gen" onclick="window.openSummary()">生成训练日志</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="pub-btn-publish" onclick="window.openSummary()">发布</button>
+            </div>
+        </div>
+                        <!-- ===== 个人页面（内联 HTML） ===== -->
+        <div id="profilePage">
+            <div class="profile-flex">
+                <div class="profile-avatar-center">
+                    <div class="avatar" onclick="window.showToast('📷 更换头像功能开发中')"></div>
+                    <div class="name">GO RUN</div>
+                    <div class="sub">等级 Lv.5 · 加入 2026-07-01</div>
+                    <button class="edit-btn" onclick="window.showToast('✎ 编辑资料功能开发中')">编辑资料</button>
+                </div>
+                <div class="profile-section-title">训练目标</div>
+                <div class="profile-card">
+                    <div class="goal-row"><span class="goal-label">每周训练天数</span><span class="goal-value">5 / 7</span></div>
+                    <div class="goal-row"><span class="goal-label">每次训练时长</span><span class="goal-value">45 / 60 min</span></div>
+                    <div class="goal-row"><span class="goal-label">每周总动作</span><span class="goal-value">18 / 25</span></div>
+                </div>
+                <div class="profile-section-title">训练回顾</div>
+                <div class="profile-card">
+                    <div class="profile-cal-header"><span>7月 2026</span><span>训练 5 天</span></div>
+                    <div class="weekday-row"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                    <div class="mini-calendar" id="miniCalendar"></div>
+                </div>
+                <div class="profile-section-title">训练日志</div>
+                <div class="log-entry-btn" onclick="window.showToast('📖 训练日志页面开发中')">
+                    <div class="log-left">
+                        <div class="circle-icon" style="background:rgba(0,241,254,0.18);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="#2A9CFF" stroke-width="2"/><path d="M8 8h3v3H8V8zm5 0h3v3h-3V8zm-5 5h3v3H8v-3zm5 0h3v3h-3v-3z" stroke="#2A9CFF" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                        <div><div class="log-title">查看我的训练日志</div><div class="log-count">共 12 条记录</div></div>
+                    </div>
+                    <span class="log-arrow">›</span>
+                </div>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="circle-icon" style="background:rgba(255,182,246,0.40);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#FA64DC" stroke-width="2"/><path d="M8 12l3 3 5-6" stroke="#FA64DC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                        <div class="a-body"><div class="a-title">今日训练打卡</div><div class="a-desc">7月26日 · 5个动作 · 320kcal</div></div>
+                        <span class="a-time">刚刚</span>
+                    </div>
+                    <div class="activity-item">
+                        <div class="circle-icon" style="background:rgba(176,248,32,0.40);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="7" r="4" stroke="#4C6F00" stroke-width="2"/><path d="M6 19c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#4C6F00" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="14" x2="4" y2="20" stroke="#4C6F00" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                        <div class="a-body"><div class="a-title">体脂 15.2% ▼</div><div class="a-desc">7月25日 · 体脂下降0.8%</div></div>
+                        <span class="a-time">昨天</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="pageContainer"></div>
+
+    </div>
+
+
+    <!-- ===== 固定 FAB（仅今日页面） ===== -->
+    <div class="fab-fixed" id="fabFixed">
+        <button class="fab-btn" onclick="window.openModal()">+</button>
+    </div>
+
+    <!-- ===== 底部 Tab（同步 demo 悬浮胶囊版） ===== -->
+    <div class="bottom-tab-bar">
+        <div class="nav-slot"><button class="tab-item active" data-tab="today" onclick="window.switchTab('today')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12l9-9 9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v10h14V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>今日</button></div>
+        <div class="nav-slot"><button class="tab-item" data-tab="follow" onclick="window.switchTab('follow')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="14" rx="3" stroke="currentColor" stroke-width="2"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>跟练</button></div>
+        <div class="nav-slot"><div class="nav-center" onclick="window.switchTab('publish')"><i><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 8h3l2-3h6l2 3h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2.2"/></svg></i></div></div>
+        <div class="nav-slot"><button class="tab-item" data-tab="health" onclick="window.switchTab('health')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-9.5-9C1 8.5 3 5 6.5 5c2 0 3.5 1 4.5 2.5C12 6 13.5 5 15.5 5 19 5 21 8.5 19.5 12c-2 4.4-7.5 9-7.5 9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>健康</button></div>
+        <div class="nav-slot"><button class="tab-item" data-tab="profile" onclick="window.switchTab('profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>个人</button></div>
+    </div>
+    <!-- ===== 发布页进阶数据弹窗 ===== -->
+    <div class="pub-modal-overlay" id="pubAdvModal" onclick="window.closePubAdv()">
+        <div class="pub-modal-panel" onclick="event.stopPropagation()">
+            <div class="pub-modal-handle"></div>
+            <div class="pub-modal-header">
+                <div class="pub-modal-title">进阶数据</div>
+                <button class="pub-btn-auto" onclick="window.autoFillPub()">自动导入</button>
+            </div>
+            <div class="pub-data-grid">
+                <div class="pub-data-cell"><label>体重 (kg) · 选填</label><input type="number" id="pfWeight" placeholder="--" step="0.1"></div>
+                <div class="pub-data-cell"><label>体脂率 (%) · 选填</label><input type="number" id="pfFat" placeholder="--" step="0.1"></div>
+                <div class="pub-data-cell"><label>消耗热量 (kcal) · 选填</label><input type="number" id="pfKcal" placeholder="--"></div>
+                <div class="pub-data-cell"><label>HBM (kg) · 选填</label><input type="number" id="pfHbm" placeholder="--" step="0.1"></div>
+                <div class="pub-data-cell"><label>骨骼肌 (kg) · 选填</label><input type="number" id="pfMuscle" placeholder="--" step="0.1"></div>
+                <div class="pub-data-cell"><label>内脏脂肪 · 选填</label><input type="number" id="pfVisceral" placeholder="--" step="0.1"></div>
+            </div>
+            <button class="pub-btn-gen" onclick="window.genPubLog()">生成训练日志</button>
+        </div>
+    </div>
+
+    <!-- ===== 训练日志居中弹窗 ===== -->
+    <div class="pub-log-overlay" id="pubLogOverlay" onclick="window.closePubLog()">
+        <div class="pub-log-card" onclick="event.stopPropagation()">
+            <div class="pub-log-hero">📸<div class="pub-log-count">1 / 3</div></div>
+            <div class="pub-log-thumbs"><div class="pub-log-thumb on">📸</div><div class="pub-log-thumb">📸</div><div class="pub-log-thumb">📸</div></div>
+            <div class="pub-log-head"><span class="pub-log-date" id="plpDate"></span><span class="pub-log-mood">😤💪🔥</span></div>
+            <div class="pub-log-text" id="plpText"></div>
+            <div class="pub-log-data" id="plogRows"></div>
+            <div class="pub-log-actions">
+                <button class="pub-btn-close" onclick="window.closePubLog()">关闭</button>
+                <button class="pub-btn-post" onclick="window.doPubPost()">发布</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ===== 进阶数据抽屉（发布页） ===== -->
+    <div class="sheet-overlay" id="advSheet" onclick="window.closeAdvSheet()">
+        <div class="sheet-panel" onclick="event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <div style="font-size:15px;font-weight:800;margin-bottom:4px;">进阶数据</div>
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:12px;">体脂 / HBM / 趋势 · 选填</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div style="background:rgba(255,255,255,.6);border:1px solid rgba(60,60,67,.1);border-radius:12px;padding:9px 11px;"><label style="font-size:10px;color:#8E8E93;display:block;margin-bottom:3px;">体重 (kg)</label><input type="number" value="72.6" style="width:100%;border:none;background:transparent;font-size:14px;font-weight:700;font-family:inherit;outline:none;color:var(--text);"></div>
+                <div style="background:rgba(255,255,255,.6);border:1px solid rgba(60,60,67,.1);border-radius:12px;padding:9px 11px;"><label style="font-size:10px;color:#8E8E93;display:block;margin-bottom:3px;">体脂率 (%)</label><input type="number" value="15.2" style="width:100%;border:none;background:transparent;font-size:14px;font-weight:700;font-family:inherit;outline:none;color:var(--text);"></div>
+                <div style="background:rgba(255,255,255,.6);border:1px solid rgba(60,60,67,.1);border-radius:12px;padding:9px 11px;"><label style="font-size:10px;color:#8E8E93;display:block;margin-bottom:3px;">骨骼肌 (kg)</label><input type="number" value="42.5" style="width:100%;border:none;background:transparent;font-size:14px;font-weight:700;font-family:inherit;outline:none;color:var(--text);"></div>
+                <div style="background:rgba(255,255,255,.6);border:1px solid rgba(60,60,67,.1);border-radius:12px;padding:9px 11px;"><label style="font-size:10px;color:#8E8E93;display:block;margin-bottom:3px;">消耗 (kcal)</label><input type="number" value="320" style="width:100%;border:none;background:transparent;font-size:14px;font-weight:700;font-family:inherit;outline:none;color:var(--text);"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:14px;">
+                <button class="auto-btn" onclick="window.showToast('自动导入今日数据')">自动导入</button>
+                <button class="grad-btn" style="flex:1;padding:12px;font-size:13px;" onclick="window.genLog()">生成日志</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 训练日志浮窗（发布页） ===== -->
+    <div class="sheet-overlay" id="logSheet" onclick="window.closeLogSheet()">
+        <div class="sheet-panel" onclick="event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <div style="font-size:15px;font-weight:800;margin-bottom:10px;">训练日志</div>
+            <div style="height:90px;border-radius:12px;background:linear-gradient(135deg,#FFE9FB,#C9F9FE);display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:10px;">W</div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-bottom:8px;"><span>2026-07-26 周日</span><span>😤💪🔥</span></div>
+            <div style="font-size:12px;color:var(--text-2);line-height:1.7;margin-bottom:10px;" id="pvText">今天练了腹部核心，状态不错！坚持第 21 天...</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:80px;background:rgba(255,255,255,.6);border-radius:10px;padding:7px;text-align:center;"><div style="font-size:13px;font-weight:900;color:var(--purple-deep);">72.6kg</div><div style="font-size:9px;color:var(--text-3);">体重</div></div>
+                <div style="flex:1;min-width:80px;background:rgba(255,255,255,.6);border-radius:10px;padding:7px;text-align:center;"><div style="font-size:13px;font-weight:900;color:var(--purple-deep);">15.2%</div><div style="font-size:9px;color:var(--text-3);">体脂</div></div>
+                <div style="flex:1;min-width:80px;background:rgba(255,255,255,.6);border-radius:10px;padding:7px;text-align:center;"><div style="font-size:13px;font-weight:900;color:var(--purple-deep);">320kcal</div><div style="font-size:9px;color:var(--text-3);">消耗</div></div>
+            </div>
+            <button class="grad-btn" style="width:100%;margin-top:14px;padding:12px;font-size:14px;" onclick="window.closeLogSheet();window.showToast('发布成功！')">发布</button>
+        </div>
+    </div>
+
+    <!-- ===== 课程详情页（跟练 V2） ===== -->
+    <div class="detail-overlay" id="detailOverlay">
+        <div class="detail-page">
+            <div class="detail-top">
+                <button class="detail-back" onclick="window.closeDetail()">‹</button>
+                <button class="detail-fav" id="detailFav" onclick="window.toggleDetailFav()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-9.5-9C1 8.5 3 5 6.5 5c2 0 3.5 1 4.5 2.5C12 6 13.5 5 15.5 5 19 5 21 8.5 19.5 12c-2 4.4-7.5 9-7.5 9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+            </div>
+            <div class="detail-body">
+                <div class="detail-name" id="detailName"></div>
+                <div class="detail-desc" id="detailDesc"></div>
+                <div class="detail-stats">
+                    <div class="ds-cell"><b id="dTime"></b><span>时长</span></div>
+                    <div class="ds-cell"><b id="dKcal"></b><span>消耗</span></div>
+                    <div class="ds-cell"><b id="dLevel"></b><span>强度</span></div>
+                    <div class="ds-cell"><b id="dCount"></b><span>动作</span></div>
+                </div>
+                <div class="detail-sec">所需器械</div>
+                <div class="detail-equip" id="detailEquip"></div>
+                <div class="detail-sec">训练动作</div>
+                <div class="detail-moves" id="detailMoves"></div>
+            </div>
+            <div class="detail-bottom">
+                <button class="detail-start" onclick="window.startCourse()">开始跟练</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 跟练视频全屏播放层 ===== -->
+    <div class="video-full-player" id="videoFullPlayer">
+        <div class="vfp-top">
+            <button class="vfp-back" onclick="window.closeVideoPlayer()">←</button>
+            <div class="vfp-title" id="vfpTitle"></div>
+        </div>
+        <div class="vfp-wrap"><iframe id="vfpVideo" src="" allowfullscreen allow="autoplay"></iframe></div>
+    </div>
+
+    <!-- ===== 课程详情底部抽屉 ===== -->
+    <div class="sheet-overlay" id="sheetOverlay" onclick="window.closeSheet()">
+        <div class="sheet-panel" id="sheetPanel" onclick="event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <h3 id="sheetTitle"></h3>
+            <span class="sheet-tag" id="sheetTag"></span>
+            <div class="sheet-grid">
+                <div class="sheet-cell"><div class="val" id="sheetTime"></div><div class="lbl">时长</div></div>
+                <div class="sheet-cell"><div class="val" id="sheetKcal"></div><div class="lbl">消耗</div></div>
+                <div class="sheet-cell"><div class="val" id="sheetIntensity"></div><div class="lbl">强度</div></div>
+                <div class="sheet-cell"><div class="val" id="sheetCount"></div><div class="lbl">动作数</div></div>
+            </div>
+            <div class="sheet-label">🏋️ 训练动作</div>
+            <div class="sheet-moves" id="sheetMoves"></div>
+            <div class="sheet-label">🎒 所需器械</div>
+            <div class="sheet-equip" id="sheetEquip"></div>
+            <button class="sheet-start" id="sheetStart">开始跟练</button>
+        </div>
+    </div>
+
+   <!-- ===== 选择运动浮窗 ===== -->
+<div class="modal-overlay" id="actionModal">
+    <div class="modal-panel">
+        <div class="modal-header">
+            <button class="close-icon" id="modalCloseBtn" onclick="window.closeModal()">✕</button>
+        </div>
+        <div class="character-slot">
+            <div class="placeholder">
+                <div class="icon">🧑‍🦰</div>
+                <div class="text">3D 形象预留</div>
+                <div class="sub">即将上线</div>
+            </div>
+        </div>
+        <div class="tab-switch-borderless" id="tabSwitch">
+            <span class="tab-label active" data-tab="0">无氧</span>
+            <span class="tab-label" data-tab="1">有氧</span>
+            <div class="tab-indicator" id="tabIndicator"></div>
+        </div>
+        <div class="tab-slider-container" id="sliderContainer">
+            <div class="tab-slider" id="tabSlider">
+                <div class="tab-page strength-tab">
+                    <div class="part-tabs" id="partTabs">
+                        <button class="part-btn active" data-part="chest">胸部</button>
+                        <button class="part-btn" data-part="back">背部</button>
+                        <button class="part-btn" data-part="legs">臀腿</button>
+                        <button class="part-btn" data-part="shoulders">肩部</button>
+                        <button class="part-btn" data-part="arms">手臂</button>
+                        <button class="part-btn" data-part="core">核心</button>
+                    </div>
+                    <div class="row" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                        <div class="preset-wrap" id="presetWrap" style="flex:1;">
+                            <div class="preset-trigger" id="presetTrigger" onclick="document.getElementById('presetWrap').classList.toggle('open');this.classList.toggle('open')">
+                                <span id="presetCur">平板卧推</span>
+                                <div class="arr"><span>▴</span><span>▾</span></div>
+                            </div>
+                            <div class="preset-drop" id="presetDrop"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>或自定义动作</label>
+                        <input type="text" id="strengthName" placeholder="输入动作名称...">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>组数</label><input type="number" id="sGroups" value="4" min="1"></div>
+                        <div class="form-group"><label>次数</label><input type="number" id="sReps" value="10" min="1"></div>
+                        <div class="form-group"><label>重量(kg)</label><input type="number" id="sWeight" value="50" min="0" step="2.5"></div>
+                    </div>
+                </div>
+                <div class="tab-page cardio-tab">
+                    <div class="row" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                        <div class="preset-wrap" id="cardioPresetWrap" style="flex:1;">
+                            <div class="preset-trigger" id="cardioPresetTrigger" onclick="document.getElementById('cardioPresetWrap').classList.toggle('open');this.classList.toggle('open')">
+                                <span id="cardioPresetCur">跑步</span>
+                                <div class="arr"><span>▴</span><span>▾</span></div>
+                            </div>
+                            <div class="preset-drop" id="cardioPresetDrop"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>或自定义运动</label>
+                        <input type="text" id="cardioName" placeholder="输入运动名称...">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>时长(分钟)</label><input type="number" id="cDuration" value="30" min="1"></div>
+                        <div class="form-group"><label>距离(km)</label><input type="number" id="cDistance" value="5.0" min="0" step="0.1"></div>
+                        <div class="form-group"><label>消耗(kcal)</label><input type="number" id="cCalories" value="280" min="0"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn-add" id="modalAddBtn" onclick="window.addActionWithType()">添加</button>
+    </div>
+</div>
+
+    <!-- ===== 训练日志确认浮框（方案 C：照片 + 文案 + 数据网格） ===== -->
+    <div class="summary-modal" id="summaryModal" onclick="window.closeSummaryModal()">
+        <div class="panel" onclick="event.stopPropagation()">
+            <div class="sm-head">
+                <span class="sm-title">训练日志</span>
+            </div>
+            <div class="sm-photo" id="smPhoto"><span class="sm-emoji">🏋️</span><span class="sm-count" id="smCount"></span></div>
+            <div class="sm-text" id="smText"></div>
+            <div class="sm-grid">
+                <div class="sm-cell"><div class="lbl">日期</div><div class="val" id="smDate"></div></div>
+                <div class="sm-cell"><div class="lbl">动作</div><div class="val" id="smActs"></div></div>
+                <div class="sm-cell"><div class="lbl">消耗</div><div class="val" id="smKcal"></div></div>
+                <div class="sm-cell"><div class="lbl">时长</div><div class="val" id="smDur"></div></div>
+            </div>
+            <div class="sm-actions">
+                <button class="sm-edit" onclick="window.closeSummaryModal()">返回</button>
+                <button class="sm-confirm" onclick="window.confirmPublish()">确认发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 换装弹窗 ===== -->
+    <div class="dress-modal" id="dressModal">
+        <div class="panel">
+            <h4>👗 换装</h4>
+            <div class="options">
+                <button class="opt active" onclick="window.changeOutfit('🧑‍🦰')">👨 经典</button>
+                <button class="opt" onclick="window.changeOutfit('🧑‍🎤')">🎤 潮流</button>
+                <button class="opt" onclick="window.changeOutfit('🧑‍🚀')">🚀 太空</button>
+                <button class="opt" onclick="window.changeOutfit('🧑‍🏫')">📚 学院</button>
+                <button class="opt" onclick="window.changeOutfit('🧑‍🍳')">🍳 厨师</button>
+                <button class="opt" onclick="window.changeOutfit('🧑‍💻')">💻 极客</button>
+            </div>
+            <button class="close-btn" onclick="window.closeDressModal()">✕ 关闭</button>
+        </div>
+    </div>
+
+    <!-- ===== 设置菜单（icon 旁浮层） ===== -->
+    <div class="pop-menu" id="popMenu">
+        <button class="p-item" data-act="drag">排序</button>
+        <button class="p-item" data-act="edit">修改</button>
+        <button class="p-item" data-act="pin">置顶</button>
+        <button class="p-item danger" data-act="del">删除</button>
+    </div>
+
+    <!-- ===== 修改二级弹窗 ===== -->
+    <div class="edit-overlay" id="editOverlay" onclick="window.closeEdit()">
+        <div class="edit-panel" onclick="event.stopPropagation()">
+            <div class="edit-head">
+                <span class="edit-title">修改运动</span>
+                <button class="edit-close" onclick="window.closeEdit()">✕</button>
+            </div>
+            <div class="edit-field">
+                <label>名称</label>
+                <input id="editName" placeholder="运动名称">
+            </div>
+            <div class="edit-field">
+                <label>类型</label>
+                <div class="edit-type-tabs" id="editTypeTabs">
+                    <button class="et-tab on" data-t="力量">力量</button>
+                    <button class="et-tab" data-t="有氧">有氧</button>
+                </div>
+            </div>
+            <div class="edit-field">
+                <div class="edit-row" id="editParamsStrength">
+                    <label>组数<input type="number" id="editGroups" value="4" min="1"></label>
+                    <label>次数<input type="number" id="editReps" value="10" min="1"></label>
+                    <label>重量(kg)<input type="number" id="editWeight" value="50" min="0" step="2.5"></label>
+                </div>
+                <div class="edit-row" id="editParamsCardio" style="display:none">
+                    <label>时长(分钟)<input type="number" id="editDur" value="30" min="1"></label>
+                    <label>距离(km)<input type="number" id="editDist" value="5" min="0" step="0.1"></label>
+                </div>
+            </div>
+            <div class="edit-actions">
+                <button class="btn-ghost-e" onclick="window.closeEdit()">取消</button>
+                <button class="btn-save" onclick="window.saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ===== JavaScript 按顺序加载 ===== -->
+<script src="js/data.js"></script>
+<script src="js/modules/publish.js"></script>
+<script src="js/modules/health.js"></script>
+<script src="js/modules/profile.js"></script>
+<script src="js/app.js"></script>
+
+<!-- ===== 完全接管页面切换逻辑（不调用原始 switchTab） ===== -->
+<script>
+    (function() {
+        // ═══════════════════════════════════════
+        // ═══════════════════════════════════════
+        //  今日页 · demo-today-ring 版（唯一实现）
+        // ═══════════════════════════════════════
+var tdDates = (function(){
+    var WEEK = ['日','一','二','三','四','五','六'];
+    var train = { 21:true, 22:true, 24:true, 26:true };
+    var arr = [];
+    for (var d = 1; d <= 31; d++){
+      arr.push({ day: WEEK[(3 + d - 1) % 7], date: String(d), dot: !!train[d] });
+    }
+    return arr;
+  })();
+  var tdSelected = '26';
+  var tdWorkouts = [
+    { name:'平板卧推', meta:'4组 × 10次 × 50kg', type:'力量' },
+    { name:'高位下拉', meta:'4组 × 10次 × 50kg', type:'力量' },
+    { name:'慢跑',     meta:'5.2 km',            type:'有氧' },
+    { name:'深蹲',     meta:'5组 × 12次 × 60kg', type:'力量' },
+    { name:'拉伸放松', meta:'12 min',            type:'有氧' },
+    { name:'卷腹',     meta:'4组 × 20次',        type:'力量' }
+  ];
+  var tdCompleted = [];
+  var tdFilter = '全部';
+  var dragMode = false;   // 拖拽模式
+  var skipFlip = false;   // 拖拽松手时禁用本次 FLIP（避免回滑误导）
+  var menuIdx = -1;       // 设置菜单作用的卡片索引
+
+  function tdRenderCal(){
+    var row = document.getElementById('tdCalRow'); if (!row) return;
+    row.innerHTML = '';
+    tdDates.forEach(function(d){
+      var on = tdSelected === d.date;
+      var b = document.createElement('button');
+      b.className = 'cal-cell' + (on ? ' sel' : '');
+      b.setAttribute('aria-label', d.day + ' ' + d.date + '日');
+      b.innerHTML = '<span class="cd">' + d.day + '</span><span class="cn">' + d.date + '</span>' + (d.dot ? '<span class="dot"></span>' : '');
+      b.onclick = function(){ tdSelected = d.date; tdRenderCal(); };
+      row.appendChild(b);
+    });
+  }
+
+  var RING_C = 678.6;
+  function tdUpdateProgress(){
+    var total = tdWorkouts.length || 1;
+    var done = tdCompleted.length;
+    var progress = Math.round(done / total * 100);
+    var kcal = done * 86;
+    document.getElementById('kcalNum').textContent = kcal.toLocaleString();
+    document.getElementById('kcalPct').textContent = progress + '%';
+    document.getElementById('ringFill').style.strokeDashoffset = RING_C * (1 - progress / 100);
+    document.getElementById('statDist').textContent = (8.4 * progress / 100).toFixed(1);
+    document.getElementById('statTime').textContent = Math.round(60 * progress / 100);
+    document.getElementById('statDone').textContent = done;
+  }
+
+  function isDone(w){ return tdCompleted.indexOf(tdWorkouts.indexOf(w)) > -1; }
+
+  // 勾选完成：大圆环 B+C 庆祝
+  function ringCelebrate(){
+    var hero = document.querySelector('.ring-hero');
+    var fill = document.getElementById('ringFill');
+    if (fill){ fill.classList.remove('fx-color'); void fill.offsetWidth; fill.classList.add('fx-color');
+      setTimeout(function(){ fill.classList.remove('fx-color'); }, 950); }
+    if (hero) spawnSparks(hero);
+  }
+  function spawnSparks(hero){
+    var C = 110, colors = ['#FFB6F6', '#A78BFA', '#FFE28A', '#2A9CFF', '#B7FF2A'];
+    for (var i = 0; i < 8; i++){
+      var s = document.createElement('span');
+      s.className = 'spark';
+      var ang = Math.random() * Math.PI * 2;
+      var dist = C + 30 + Math.random() * 45;
+      s.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+      s.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+      s.style.left = '50%'; s.style.top = '50%'; s.style.marginLeft = '-7px'; s.style.marginTop = '-7px';
+      s.innerHTML = '<svg viewBox="0 0 24 24" fill="' + colors[i % colors.length] + '"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg>';
+      hero.appendChild(s);
+      (function(el){ setTimeout(function(){ el.remove(); }, 800); })(s);
+    }
+  }
+
+  function tdRenderList(){
+    var list = document.getElementById('tdList'); if (!list) return;
+    var prev = {};
+    list.querySelectorAll('.wk-card').forEach(function(c){
+      var r = c.getBoundingClientRect();
+      prev[c.dataset.idx] = { top: r.top, left: r.left };
+    });
+    var data = tdWorkouts.filter(function(w){ return tdFilter === '全部' || w.type === tdFilter; });
+    data.sort(function(a, b){
+      if (a.pinned) return -1;
+      if (b.pinned) return 1;
+      return (isDone(a) ? 1 : 0) - (isDone(b) ? 1 : 0);
+    });
+    list.innerHTML = '';
+    data.forEach(function(w){
+      var orig = tdWorkouts.indexOf(w);
+      var done = isDone(w);
+      var isCardio = w.type === '有氧';
+      var card = document.createElement('button');
+      card.className = 'wk-card' + (done ? ' done' : '');
+      card.dataset.idx = orig;
+      // 置顶标记：类型色描边 + 发光（力量浅绿 / 有氧浅粉）
+      if (w.pinned){
+        card.style.border = '1.5px solid ' + (isCardio ? 'var(--accent)' : 'var(--green-soft)');
+        card.style.boxShadow = '0 4px 18px ' + (isCardio ? 'rgba(255,182,246,.5)' : 'rgba(214,250,143,.5)');
+      }
+      var checkStyle = isCardio
+        ? (done ? 'border-color:#df91d2;background:#f2b1e9;' : 'border-color:#e8b7db;')
+        : (done ? 'border-color:#9ed34b;background:#b9e96a;' : 'border-color:#cce88c;');
+      card.innerHTML =
+        '<span class="wk-check" style="' + checkStyle + '">' + (done ? '<svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1 6l4.5 3.5L13 1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '') + '</span>' +
+        '<span class="wk-main"><span class="wk-name">' + w.name + '<em class="wk-tag" style="' + (isCardio ? 'background:var(--accent);color:var(--accent-ink)' : 'background:var(--green-soft);color:var(--green-ink)') + '">' + w.type + '</em></span>' +
+        '<span class="wk-meta">' + w.meta + '</span></span>' +
+        (dragMode
+          ? '<span class="drag-ic" aria-label="拖动排序"></span>'
+          : '<span class="wk-more" aria-label="更多操作"></span>');
+      // 勾选
+      card.onclick = function(){
+        if (dragMode) return;
+        var wasDone = done;
+        var p = tdCompleted.indexOf(orig);
+        if (p > -1) tdCompleted.splice(p, 1); else tdCompleted.push(orig);
+        if (!wasDone) ringCelebrate();
+        tdUpdateProgress(); tdRenderList();
+      };
+      // 设置菜单
+      var more = card.querySelector('.wk-more');
+      if (more){
+        more.onclick = function(e){
+          e.stopPropagation();
+          if (dragMode) return;
+          openMenu(orig, more);
+        };
+      }
+      // 拖拽（仅拖拽模式）：实时让位，可拖到任意位置
+      var dragIc = card.querySelector('.drag-ic');
+      if (dragIc){
+        var startY = 0, offsetY = 0, dragging = false;
+        var step = 0, maxIdx = 0, dragIdx = -1;
+        dragIc.addEventListener('pointerdown', function(e){
+          e.preventDefault(); dragging = true; startY = e.clientY; offsetY = 0;
+          dragIdx = Array.prototype.indexOf.call(list.children, card);
+          step = card.offsetHeight + 12;                       // 卡高 + 间距
+          maxIdx = Math.max(0, list.children.length - 1);
+          card.style.transition = 'none'; card.style.zIndex = '5';
+          card.style.boxShadow = '0 6px 16px rgba(83,79,115,.15)';
+          card.style.willChange = 'transform';
+          try { dragIc.setPointerCapture(e.pointerId); } catch(err){}
+        });
+        dragIc.addEventListener('pointermove', function(e){
+          if (!dragging) return;
+          offsetY = e.clientY - startY;
+          card.style.transform = 'translateY(' + offsetY + 'px) scale(1.02)';
+          // 实时让位：其他卡用 transform 平移让开（零 reflow，靠 .wk-card 的 transition 平滑）
+          var target = dragIdx + Math.round(offsetY / step);
+          if (target < 0) target = 0;
+          if (target > maxIdx) target = maxIdx;
+          Array.prototype.forEach.call(list.children, function(c, i){
+            if (c === card) return;
+            var t = 0;
+            if (target < dragIdx && i >= target && i < dragIdx) t = step;       // 上拖：被越过的卡下移
+            else if (target > dragIdx && i > dragIdx && i <= target) t = -step; // 下拖：被越过的卡上移
+            c.style.transform = t ? 'translateY(' + t + 'px)' : '';
+          });
+        });
+        function dragEnd(){
+          if (!dragging) return;
+          dragging = false;
+          card.style.willChange = '';
+          var cardObj = tdWorkouts[parseInt(card.dataset.idx)];
+          // 置顶卡不可拖动排序
+          if (cardObj && cardObj.pinned){
+            Array.prototype.forEach.call(list.children, function(c){ if (c !== card) c.style.transform = ''; });
+            card.style.transition = ''; card.style.transform = ''; card.style.zIndex = ''; card.style.boxShadow = '';
+            return;
+          }
+          var target = dragIdx + Math.round(offsetY / step);
+          if (target < 0) target = 0;
+          if (target > maxIdx) target = maxIdx;
+          // 置顶卡永远在顶部：其他卡不能排到它前面
+          var pinInShown = -1;
+          Array.prototype.forEach.call(list.children, function(c, i){
+            if (tdWorkouts[parseInt(c.dataset.idx)].pinned) pinInShown = i;
+          });
+          if (pinInShown === 0 && target === 0) target = 1;
+          if (target === dragIdx){
+            // 未移动：清让位 + 被拖卡回弹
+            Array.prototype.forEach.call(list.children, function(c){ if (c !== card) c.style.transform = ''; });
+            card.style.transition = ''; card.style.transform = ''; card.style.zIndex = ''; card.style.boxShadow = '';
+            return;
+          }
+          // 重排数据
+          var shown = [];
+          Array.prototype.forEach.call(list.children, function(c){ shown.push(tdWorkouts[parseInt(c.dataset.idx)]); });
+          var hidden = tdWorkouts.filter(function(w){ return shown.indexOf(w) === -1; });
+          shown.splice(shown.indexOf(cardObj), 1);
+          shown.splice(target, 0, cardObj);
+          var doneObjs = tdCompleted.map(function(i){ return tdWorkouts[i]; });
+          tdWorkouts = shown.concat(hidden);
+          // 置顶卡提到数据首位
+          var pinPos = -1;
+          for (var pi = 0; pi < tdWorkouts.length; pi++){ if (tdWorkouts[pi].pinned){ pinPos = pi; break; } }
+          if (pinPos > 0){
+            var pinItem = tdWorkouts[pinPos];
+            tdWorkouts.splice(pinPos, 1);
+            tdWorkouts.unshift(pinItem);
+          }
+          tdCompleted = doneObjs.map(function(o){ return tdWorkouts.indexOf(o); });
+          // 拖动中已实时让位，松手直接静默重排（不播回滑动画）
+          skipFlip = true;
+          tdUpdateProgress(); tdRenderList();
+        }
+        dragIc.addEventListener('pointerup', dragEnd);
+        dragIc.addEventListener('pointercancel', dragEnd);
+      }
+      list.appendChild(card);
+    });
+    // FLIP 位移动效（拖拽松手时跳过——拖动中已实时让位）
+    if (!skipFlip){
+      requestAnimationFrame(function(){
+        list.querySelectorAll('.wk-card').forEach(function(c){
+          var p = prev[c.dataset.idx];
+          if (!p) return;
+          var r = c.getBoundingClientRect();
+          var dy = p.top - r.top, dx = p.left - r.left;
+          if (Math.abs(dy) < 1 && Math.abs(dx) < 1) return;
+          c.style.transition = 'none';
+          c.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+          void c.getBoundingClientRect();
+          c.style.transition = 'transform .45s cubic-bezier(.4,0,.2,1)';
+          c.style.transform = '';
+          setTimeout(function(){ c.style.transition = ''; c.style.transform = ''; }, 500);
+        });
+      });
+    }
+    skipFlip = false;
+    // 完成按钮显隐
+    document.getElementById('doneBtn').style.display = dragMode ? 'flex' : 'none';
+  }
+
+  /* ═══════ 设置菜单（icon 旁浮层） ═══════ */
+  window.openMenu = function(idx, moreEl){
+    menuIdx = idx;
+    var menu = document.getElementById('popMenu');
+    // 已置顶的卡 → 显示「取消置顶」
+    var w = tdWorkouts[idx];
+    var pinBtn = menu.querySelector('[data-act="pin"]');
+    if (w && pinBtn) pinBtn.textContent = w.pinned ? '取消置顶' : '置顶';
+    var r = moreEl.getBoundingClientRect();
+    var mw = 124, mh = 4 * 36 + 8;
+    var left = r.left - mw - 8, top = r.top;   // 顶部与设置 icon 平齐
+    if (left < 8) left = 8;
+    if (top < 8) top = 8;
+    if (top + mh > window.innerHeight - 8) top = window.innerHeight - mh - 8;
+    menu.style.left = left + 'px';
+    menu.style.top = top + 'px';
+    menu.classList.add('show');
+  };
+  window.closeMenu = function(){
+    document.getElementById('popMenu').classList.remove('show');
+  };
+  document.addEventListener('click', function(e){
+    var menu = document.getElementById('popMenu');
+    if (menu.classList.contains('show') && !menu.contains(e.target)) window.closeMenu();
+  });
+  document.querySelectorAll('.p-item[data-act]').forEach(function(it){
+    it.onclick = function(){
+      var act = it.dataset.act;
+      var idx = menuIdx;
+      window.closeMenu();
+      if (idx < 0) return;
+      if (act === 'drag'){
+        dragMode = true;
+        window.showToast('进入拖拽模式：拖动右侧三横线排序');
+        tdRenderList();
+      } else if (act === 'edit'){
+        openEdit(idx);
+      } else if (act === 'del'){
+        var doneObjs = tdCompleted.map(function(i){ return tdWorkouts[i]; });
+        tdWorkouts.splice(idx, 1);
+        tdCompleted = doneObjs.map(function(o){ return tdWorkouts.indexOf(o); }).filter(function(p){ return p > -1; });
+        tdUpdateProgress(); tdRenderList();
+        window.showToast('已删除');
+      } else if (act === 'pin'){
+        var item = tdWorkouts[idx];
+        var doneObjs2 = tdCompleted.map(function(i){ return tdWorkouts[i]; });
+        if (item.pinned){
+          // 取消置顶：清除标记 + 移回原位
+          var origIdx = item._origIdx !== undefined ? item._origIdx : 0;
+          var cur = tdWorkouts.indexOf(item);
+          tdWorkouts.splice(cur, 1);
+          tdWorkouts.splice(Math.min(origIdx, tdWorkouts.length), 0, item);
+          item.pinned = false;
+          delete item._origIdx;
+          tdCompleted = doneObjs2.map(function(o){ return tdWorkouts.indexOf(o); });
+          tdRenderList();
+          window.showToast('已取消置顶');
+        } else {
+          // 置顶：记录原位置 + 标记 + 移到顶部
+          item._origIdx = idx;
+          tdWorkouts.forEach(function(x){ x.pinned = false; });
+          item.pinned = true;
+          tdWorkouts.splice(idx, 1);
+          tdWorkouts.unshift(item);
+          tdCompleted = doneObjs2.map(function(o){ return tdWorkouts.indexOf(o); });
+          tdRenderList();
+          window.showToast('已置顶');
+        }
+      }
+    };
+  });
+
+  // 完成拖拽
+  window.finishDrag = function(){
+    dragMode = false;
+    window.showToast('拖拽完成');
+    tdRenderList();
+  };
+
+  /* ═══════ 修改二级弹窗 ═══════ */
+  var editIdx = -1;
+  window.closeEdit = function(){ document.getElementById('editOverlay').classList.remove('show'); };
+  function setEditType(t){
+    var isS = t === '力量';
+    document.querySelectorAll('#editTypeTabs .et-tab').forEach(function(x){ x.classList.toggle('on', x.dataset.t === t); });
+    document.getElementById('editParamsStrength').style.display = isS ? 'flex' : 'none';
+    document.getElementById('editParamsCardio').style.display = isS ? 'none' : 'flex';
+  }
+  document.querySelectorAll('#editTypeTabs .et-tab').forEach(function(t){
+    t.onclick = function(){ setEditType(t.dataset.t); };
+  });
+  function openEdit(idx){
+    var w = tdWorkouts[idx];
+    if (!w) return;
+    editIdx = idx;
+    document.getElementById('editName').value = w.name;
+    setEditType(w.type === '力量' ? '力量' : '有氧');
+    if (w.type === '力量'){
+      var m = w.meta.match(/(\d+)\s*组\s*×\s*(\d+)\s*次\s*×\s*([\d.]+)\s*kg/);
+      document.getElementById('editGroups').value = m ? m[1] : '4';
+      document.getElementById('editReps').value = m ? m[2] : '10';
+      document.getElementById('editWeight').value = m ? m[3] : '50';
+    } else {
+      var m2 = w.meta.match(/([\d.]+)\s*km(?:\s*·\s*(\d+)\s*分钟)?/);
+      document.getElementById('editDist').value = m2 ? m2[1] : '5';
+      document.getElementById('editDur').value = (m2 && m2[2]) ? m2[2] : '30';
+    }
+    document.getElementById('editOverlay').classList.add('show');
+  }
+  window.saveEdit = function(){
+    if (editIdx < 0) return;
+    var w = tdWorkouts[editIdx];
+    var name = document.getElementById('editName').value.trim();
+    if (name) w.name = name;
+    var isS = document.querySelector('#editTypeTabs .et-tab.on').dataset.t === '力量';
+    w.type = isS ? '力量' : '有氧';
+    if (isS){
+      var g = document.getElementById('editGroups').value || '4';
+      var r = document.getElementById('editReps').value || '10';
+      var wt = document.getElementById('editWeight').value || '0';
+      w.meta = g + '组 × ' + r + '次 × ' + wt + 'kg';
+    } else {
+      var d = document.getElementById('editDur').value || '30';
+      var dist = document.getElementById('editDist').value || '0';
+      w.meta = dist + ' km · ' + d + '分钟';
+    }
+    window.closeEdit();
+    tdRenderList();
+    window.showToast('已保存');
+  };
+
+  document.getElementById('tdFilters').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b || !b.dataset.f) return;
+    tdFilter = b.dataset.f;
+    document.querySelectorAll('#tdFilters .chip').forEach(function(x){ x.classList.toggle('on', x === b); });
+    tdRenderList();
+  });
+
+  // 初始化
+  tdRenderCal();
+  tdRenderList();
+  tdUpdateProgress();
+  var r = document.getElementById('tdCalRow'); if (r) r.scrollLeft = r.scrollWidth;
+
+        // ═══════════════════════════════════════
+        //  Tab Switching
+        // ═══════════════════════════════════════
+        function showToday() {
+            document.getElementById('pageContainer').classList.add('hidden');
+            document.getElementById('followPage').classList.remove('active');
+            document.getElementById('healthPage').classList.remove('active');
+            document.getElementById('publishPage').classList.remove('active');
+            document.getElementById('profilePage').classList.remove('active');
+            document.getElementById('todayPage').classList.add('active');
+            document.getElementById('fixedHeader').style.display = 'block';
+            var csF = document.getElementById('calendarStrip'); if (csF) csF.style.display = 'flex';
+            document.getElementById('fabFixed').style.display = 'block';
+            var pbN = document.getElementById('publishBadge'); if (pbN) pbN.style.display = 'none';
+        }
+
+        function hideToday() {
+            document.getElementById('todayPage').classList.remove('active');
+            document.getElementById('followPage').classList.remove('active');
+            document.getElementById('healthPage').classList.remove('active');
+            document.getElementById('publishPage').classList.remove('active');
+            document.getElementById('profilePage').classList.remove('active');
+            document.getElementById('pageContainer').classList.remove('hidden');
+            document.getElementById('fabFixed').style.display = 'none';
+            var csN = document.getElementById('calendarStrip'); if (csN) csN.style.display = 'none';
+        }
+
+        // 页面路由
+        const pageMap = {
+            'follow': 'pages/follow.html',
+            'publish': 'pages/publish.html',
+            'health': 'pages/health.html',
+            'profile': 'pages/profile.html',
+        };
+
+        window.switchTab = function(tab) {
+            document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+            const ab = document.querySelector(`.tab-item[data-tab="${tab}"]`);
+            if (ab) ab.classList.add('active');
+
+            if (tab === 'today') { showToday(); return; }
+
+            hideToday();
+
+            const header = document.getElementById('fixedHeader');
+            const badge = document.getElementById('publishBadge');
+            header.style.display = 'block';
+            var csN = document.getElementById('calendarStrip'); if (csN) csN.style.display = 'none';
+            if (badge) badge.style.display = 'none';
+
+            // 跟练、健康页面使用内联 HTML
+            if (tab === 'follow') {
+                document.getElementById('pageContainer').classList.add('hidden');
+                document.getElementById('followPage').classList.add('active');
+                return;
+            }
+            if (tab === 'health') {
+                document.getElementById('pageContainer').classList.add('hidden');
+                document.getElementById('healthPage').classList.add('active');
+                setTimeout(initHealthTabs, 100);
+                return;
+            }
+            if (tab === 'publish') {
+                document.getElementById('pageContainer').classList.add('hidden');
+                document.getElementById('publishPage').classList.add('active');
+                return;
+            }
+            if (tab === 'profile') {
+                document.getElementById('pageContainer').classList.add('hidden');
+                document.getElementById('profilePage').classList.add('active');
+                renderProfileCalendar();
+                return;
+            }
+
+            const container = document.getElementById('pageContainer');
+            const url = pageMap[tab];
+            if (!url) { container.innerHTML = '<div style="padding:40px;text-align:center;color:#8e8e93;">页面不存在</div>'; return; }
+
+            container.innerHTML = '<div style="padding:40px;text-align:center;color:#8e8e93;">加载中…</div>';
+            fetch(url + '?t=' + Date.now())
+                .then(r => r.text())
+                .then(html => { container.innerHTML = html; afterPageLoad(tab); })
+                .catch(() => { container.innerHTML = '<div style="padding:40px;text-align:center;color:#8e8e93;">页面加载失败</div>'; });
+        };
+
+        // ── Health page weight chart ──
+        var chartData = {
+            day:   { vals:[73.2,74.5,73.8,72.1,73.0,74.0,72.6], dates:['7/22','7/23','7/24','7/25','7/26','7/27','7/28'], cur:'72.6', delta:'−0.4', sub:'较昨日 ↓' },
+            week:  { vals:[74.0,73.5,73.0,72.6],              dates:['7月第1周','7月第2周','7月第3周','7月第4周'], cur:'72.6', delta:'−1.4', sub:'较上月 ↓' },
+            month: { vals:[76.0,75.2,74.5,74.0,73.2,72.6],    dates:['2月','3月','4月','5月','6月','7月'], cur:'72.6', delta:'−3.4', sub:'较半年前 ↓' }
+        };
+        window.drawChart = function(period) {
+            var d = chartData[period];
+            var pts = d.vals, xs = [], ys = [], n = pts.length, w = 340, h = 70, pad = 20;
+            var min = Math.min.apply(null, pts) - 2, max = Math.max.apply(null, pts) + 2, range = max - min;
+            for (var i = 0; i < n; i++) { xs.push(pad + (w - 2*pad) * i / (n-1)); ys.push(h - 10 - (pts[i] - min) / range * (h - 20)); }
+            var path = 'M' + xs[0].toFixed(1) + ' ' + ys[0].toFixed(1);
+            for (var i = 0; i < n-1; i++) { var cx1 = xs[i] + (xs[i+1]-xs[i])*0.5; path += ' C' + cx1.toFixed(1) + ' ' + ys[i].toFixed(1) + ' ' + cx1.toFixed(1) + ' ' + ys[i+1].toFixed(1) + ' ' + xs[i+1].toFixed(1) + ' ' + ys[i+1].toFixed(1); }
+            var dots = '';
+            for (var i = 0; i < n; i++) { dots += '<circle cx="' + xs[i].toFixed(1) + '" cy="' + ys[i].toFixed(1) + '" r="3" fill="#2A9CFF"/>'; }
+            var svgEl = document.getElementById('chartSvg');
+            if (svgEl) svgEl.innerHTML = '<svg viewBox="0 0 340 70" preserveAspectRatio="xMidYMid meet"><path d="' + path + '" stroke="#2A9CFF" stroke-width="2" fill="none" stroke-linecap="round"/>' + dots + '</svg>';
+            var datesEl = document.getElementById('chartDates');
+            if (datesEl) datesEl.innerHTML = d.dates.map(function(x){ return '<span>'+x+'</span>'; }).join('');
+            var curEl = document.querySelector('.w-current');
+            if (curEl) curEl.innerHTML = d.cur.split('.')[0] + '<span class="w-unit">.' + d.cur.split('.')[1] + ' kg</span>';
+            var deltaEl = document.querySelector('.w-delta');
+            if (deltaEl) deltaEl.textContent = d.delta;
+        };
+        function initHealthTabs() {
+            document.querySelectorAll('.ct-tab').forEach(function(t) {
+                t.addEventListener('click', function() {
+                    document.querySelectorAll('.ct-tab').forEach(function(x) { x.classList.remove('on'); });
+                    this.classList.add('on');
+                    window.drawChart(this.getAttribute('data-p'));
+                });
+            });
+            window.drawChart('day');
+        }
+
+        function afterPageLoad(tab) {
+            if (tab === 'health') { setTimeout(initHealthTabs, 100); }
+        }
+
+        // ── Profile page init ──
+        function renderProfileCalendar() {
+            const grid = document.getElementById('miniCalendar');
+            if (!grid) return;
+            const totalDays = 31;
+            const activeDays = [20, 21, 23, 25, 26];
+            let html = '';
+            for (let d = 1; d <= totalDays; d++) {
+                const isActive = activeDays.includes(d);
+                const isToday = d === 26;
+                let cls = 'cal-day';
+                if (isToday) cls += ' today';
+                else if (isActive) cls += ' active';
+                html += `<div class="${cls}" onclick="window.showToast('7月${d}日 · ${isActive?'有训练记录':'暂无训练'}')">${d}</div>`;
+            }
+            grid.innerHTML = html;
+
+            // 兜底：如果 activity-list 因任何原因未加载，JS 直接注入
+            if (!document.getElementById('activityList')) {
+                var al = document.createElement('div');
+                al.className = 'activity-list';
+                al.id = 'activityList';
+                al.innerHTML = `<div class="activity-item"><div class="circle-icon" style="background:rgba(255,182,246,0.40);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4-6.5 4 2-7L2 9h7l3-7z" stroke="#FA64DC" stroke-width="2" stroke-linejoin="round"/></svg></div><div class="a-body"><div class="a-title">今日训练打卡</div><div class="a-desc">7月26日 · 5个动作 · 320kcal</div></div><span class="a-time">刚刚</span></div><div class="activity-item"><div class="circle-icon" style="background:rgba(176,248,32,0.40);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="13" width="4" height="8" rx="1" fill="#4C6F00"/><rect x="10" y="7" width="4" height="14" rx="1" fill="#4C6F00"/><rect x="17" y="3" width="4" height="18" rx="1" fill="#4C6F00"/></svg></div><div class="a-body"><div class="a-title">体脂 15.2% ▼</div><div class="a-desc">7月25日 · 体脂下降0.8%</div></div><span class="a-time">昨天</span></div>`;
+                var container = document.getElementById('pageContainer');
+                if (container) container.appendChild(al);
+            }
+        }
+
+        // ── Global toast ──
+        window.showToast = function(msg) {
+            let el = document.getElementById('globalToast');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'globalToast';
+                el.style.cssText = 'position:absolute;left:50%;bottom:140px;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:white;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap;';
+                document.getElementById('app').appendChild(el);
+            }
+            el.textContent = msg;
+            el.style.opacity = '1';
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 1500);
+        };
+
+        // ── 进阶数据下拉展开（白框向下延伸） ──
+        window.toggleAdv = function(){
+            var g = document.querySelector('.adv-glass');
+            var d = document.getElementById('advDropdown');
+            d.classList.toggle('open');
+            if (g) g.classList.toggle('open');
+        };
+        var pubPhotos = [];   // 最多 3 张
+        window.renderPhotoSlots = function(){
+            var row = document.getElementById('pubPhotosRow');
+            if (!row) return;
+            var html = '';
+            pubPhotos.forEach(function(url, i){
+                html += '<div class="pub-photo-slot" style="background:#fff;border-style:solid;">' +
+                          '<img src="' + url + '" alt="照片预览">' +
+                          '<span class="photo-remove" onclick="event.stopPropagation();window.removePhoto(' + i + ')">×</span>' +
+                        '</div>';
+            });
+            if (pubPhotos.length < 3){
+                html += '<div class="pub-photo-slot" onclick="window.clickSlot()"><span style="font-size:22px;color:var(--purple-tint);line-height:1;">+</span><span style="font-size:10px;color:var(--text-3);">照片</span></div>';
+            }
+            row.innerHTML = html;
+        };
+        window.clickSlot = function(){
+            document.getElementById('pubPhotoInput').click();
+        };
+        window.pickPhoto = function(input){
+            var file = input.files && input.files[0];
+            if (!file || pubPhotos.length >= 3) return;
+            pubPhotos.push(URL.createObjectURL(file));
+            renderPhotoSlots();
+            input.value = '';
+            window.showToast('📷 照片已添加');
+        };
+        window.removePhoto = function(i){
+            pubPhotos.splice(i, 1);
+            renderPhotoSlots();
+            window.showToast('已移除照片');
+        };
+        renderPhotoSlots();
+        window.autoFillAdv = function(){
+            // 今日页消耗
+            var kcal = document.getElementById('kcalNum');
+            if (kcal) document.getElementById('advKcal').value = kcal.textContent.replace(/[^0-9]/g, '');
+            // 健康页身体数据（体脂率 / 肌肉量 → HBM / 体重）
+            var fat = '', muscle = '';
+            document.querySelectorAll('#healthPage .metric').forEach(function(mt){
+                var lbl = mt.querySelector('.label');
+                var val = mt.querySelector('.value');
+                if (!lbl || !val) return;
+                var t = lbl.textContent;
+                if (t.indexOf('体脂') > -1) fat = val.textContent;
+                else if (t.indexOf('肌肉') > -1) muscle = val.textContent;
+            });
+            var wEl = document.querySelector('#healthPage .w-current');
+            var weight = wEl ? (wEl.textContent.match(/[0-9.]+/) || [''])[0] : '';
+            if (fat) document.getElementById('advFat').value = fat;
+            if (muscle) document.getElementById('advHbm').value = muscle;
+            if (weight) document.getElementById('advWeight').value = weight;
+            // 导入完成自动收起下拉
+            var d = document.getElementById('advDropdown');
+            var g = document.querySelector('.adv-glass');
+            if (d) d.classList.remove('open');
+            if (g) g.classList.remove('open');
+            window.showToast('✅ 已自动导入今日消耗与健康数据');
+        };
+
+        // ── 训练日志弹窗 ──
+        var smCur = 0;
+        function smPhotoShow(i){
+            var ph = document.getElementById('smPhoto');
+            if (!ph) return;
+            if (!pubPhotos || pubPhotos.length === 0){
+                ph.innerHTML = '<span class="sm-emoji">🏋️</span><span class="sm-count"></span>';
+                return;
+            }
+            if (i < 0) i = pubPhotos.length - 1;
+            if (i >= pubPhotos.length) i = 0;
+            smCur = i;
+            ph.innerHTML = '<img src="' + pubPhotos[i] + '" alt="照片预览">' +
+                           '<span class="sm-count">' + (i + 1) + ' / ' + pubPhotos.length + '</span>';
+        }
+        window.openSummary = function(){
+            // 照片（发布页已上传的）
+            smPhotoShow(0);
+            // 文案（发布框内容）
+            var t = document.getElementById('pubText');
+            var smText = document.getElementById('smText');
+            if (smText) smText.textContent = t && t.value.trim() ? t.value : '今天也坚持训练了，记录一下！';
+            // 数据
+            var d = new Date();
+            var dm = document.getElementById('smDate');
+            if (dm) dm.textContent = (d.getMonth() + 1) + '月' + d.getDate() + '日';
+            var acts = document.getElementById('smActs');
+            if (acts) acts.textContent = (tdCompleted ? tdCompleted.length : 0) + ' 个';
+            var kcal = document.getElementById('kcalNum');
+            var sk = document.getElementById('smKcal');
+            if (sk) sk.textContent = (kcal ? kcal.textContent : '0') + ' kcal';
+            var dur = document.getElementById('smDur');
+            if (dur) dur.textContent = Math.round((tdCompleted ? tdCompleted.length : 0) * 8) + ' 分钟';
+            document.getElementById('summaryModal').classList.add('open');
+        };
+        // 大图左右滑动（触屏 + 鼠标拖）
+        (function(){
+            var ph = document.getElementById('smPhoto');
+            if (!ph) return;
+            var sx = 0;
+            ph.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, { passive: true });
+            ph.addEventListener('touchend', function(e){
+                var dx = e.changedTouches[0].clientX - sx;
+                if (Math.abs(dx) > 30 && pubPhotos && pubPhotos.length > 1) smPhotoShow(smCur + (dx < 0 ? 1 : -1));
+            }, { passive: true });
+            var mx = 0;
+            ph.addEventListener('mousedown', function(e){ mx = e.clientX; });
+            ph.addEventListener('mouseup', function(e){
+                var dx = e.clientX - mx;
+                if (Math.abs(dx) > 30 && pubPhotos && pubPhotos.length > 1) smPhotoShow(smCur + (dx < 0 ? 1 : -1));
+            });
+        })();
+        window.closeSummaryModal = function(){
+            document.getElementById('summaryModal').classList.remove('open');
+        };
+        window.confirmPublish = function(){
+            window.closeSummaryModal();
+            window.showToast('✅ 已生成训练日志');
+        };
+        window.editSummary = function(){
+            window.showToast('✎ 编辑功能开发中');
+        };
+
+        // ── Add course from follow page to today ──
+        window.addCourseToToday = function(name, category, detail, kcal) {
+            const isCardio = category === 'cardio';
+            tdWorkouts.push({ name: name, meta: detail, type: isCardio ? '有氧' : '力量' });
+            tdRenderList();
+            tdUpdateProgress();
+            window.showToast('已添加「' + name + '」到今日运动');
+        };
+
+        // ── Course detail sheet ──
+        let _sheetCourse = null;
+        window.openSheet = function(name, tag, time, kcal, unit, intensity, count, equip, moves) {
+            _sheetCourse = { name: name, category: tag === '有氧' ? 'cardio' : 'strength', detail: count + ' · ' + time, kcal: parseInt(kcal) };
+            document.getElementById('sheetTitle').textContent = name;
+            var tagEl = document.getElementById('sheetTag');
+            tagEl.textContent = tag;
+            tagEl.className = 'sheet-tag ' + (tag === '有氧' ? 't-cardio' : 't-strength');
+            document.getElementById('sheetTime').textContent = time;
+            document.getElementById('sheetKcal').textContent = kcal + ' ' + unit;
+            document.getElementById('sheetIntensity').textContent = intensity;
+            document.getElementById('sheetCount').textContent = count;
+            document.getElementById('sheetMoves').innerHTML = moves.split(' ').map(function(m) { return '<span class="move-tag">' + m + '</span>'; }).join('');
+            document.getElementById('sheetEquip').textContent = equip.split(' ').join(' · ');
+            document.getElementById('sheetOverlay').classList.add('show');
+            document.getElementById('sheetPanel').classList.add('show');
+        };
+        window.closeSheet = function() {
+            document.getElementById('sheetOverlay').classList.remove('show');
+            document.getElementById('sheetPanel').classList.remove('show');
+        };
+        document.getElementById('sheetStart').addEventListener('click', function() {
+            if (_sheetCourse) {
+                window.addCourseToToday(_sheetCourse.name, _sheetCourse.category, _sheetCourse.detail, _sheetCourse.kcal);
+                window.closeSheet();
+            }
+        });
+
+        // ── 视频全屏播放 ──
+        window.openVideoPlayer = function(bvid, title) {
+            document.getElementById('vfpTitle').textContent = title;
+            document.getElementById('vfpVideo').src = '//player.bilibili.com/player.html?bvid=' + bvid + '&page=1&high_quality=1&autoplay=1&danmaku=0';
+            document.getElementById('videoFullPlayer').classList.add('show');
+        };
+        window.closeVideoPlayer = function() {
+            document.getElementById('videoFullPlayer').classList.remove('show');
+            document.getElementById('vfpVideo').src = '';
+        };
+
+        // ── Follow page course filter ──
+        window.filterCourses = function(cat) {
+            document.querySelectorAll('#followPage .item').forEach(function(item) {
+                if (cat === 'all' || item.getAttribute('data-cat') === cat) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+
+        // 鈹€鈹€ Follow page v2 (sync from demo) 鈹€鈹€
+        var courses = [
+            { name:'帕梅拉｜10分钟腹部训练', bv:'BV1s54y1B7JH', cat:'core', dur:'10:00', hot:'120万', level:'中等', fav:true, kcal:120, equip:'瑜伽垫', moves:'卷腹 平板支撑 俄罗斯转体 仰卧举腿 侧平板 登山跑 交替触踝 反向卷腹 V字收腹 腹部拉伸', grad:'linear-gradient(135deg,#FFE9FB,#FFB6F6)' },
+            { name:'全身燃脂 HIIT 进阶', bv:'BV1yK4y1j7vX', cat:'hiit', dur:'20:00', hot:'85万', level:'高强度', fav:false, kcal:280, equip:'瑜伽垫 哑铃', moves:'开合跳 波比跳 高抬腿 登山跑 深蹲跳 平板支撑 俄罗斯转体 俯身登山 交替弓步 卷腹 俯卧撑 拉伸', grad:'linear-gradient(135deg,#EDE5FC,#C9B8F5)' },
+            { name:'蜜桃臀训练', bv:'BV1Vh411R7jM', cat:'legs', dur:'10:00', hot:'68万', level:'中等', fav:true, kcal:150, equip:'瑜伽垫 弹力带', moves:'臀桥 深蹲 侧抬腿 后踢腿 蚌式开合 跪姿后抬腿 蛙式臀桥 拉伸', grad:'linear-gradient(135deg,#C9F9FE,#2A9CFF)' },
+            { name:'核心力量进阶', bv:'BV1b3411q7Yd', cat:'strength', dur:'25:00', hot:'52万', level:'高强度', fav:false, kcal:260, equip:'哑铃 卧推架', moves:'卧推 划船 深蹲 推举 弯举 臂屈伸 侧平举 卷腹', grad:'linear-gradient(135deg,#FFF0E6,#FF8C42)' },
+            { name:'晨间唤醒拉伸', cat:'cardio', dur:'15:00', hot:'31万', level:'低强度', fav:false, kcal:90, equip:'瑜伽垫', moves:'颈部拉伸 肩部环绕 猫式伸展 婴儿式 下犬式 腿部拉伸', grad:'linear-gradient(135deg,#F0FFE6,#D6FA8F)' },
+            { name:'Tabata 燃脂操', cat:'hiit', dur:'16:00', hot:'46万', level:'高强度', fav:false, kcal:220, equip:'瑜伽垫 跳绳', moves:'开合跳 深蹲跳 高抬腿 波比跳 登山跑 平板支撑 弓步跳 拉伸', grad:'linear-gradient(135deg,#FFE9FB,#EDE5FC)' }
+        ];
+        var curCat = 'all', curTab = 'reco';
+        var catMap = { cardio:'有氧', strength:'力量', core:'核心', legs:'臀腿', hiit:'HIIT' };
+        window.renderCourses = function() {
+            var kw = (window._followKw || '').trim();
+            var data = courses.filter(function(c){
+                if (curTab === 'fav' && !c.fav) return false;
+                if (curCat !== 'all' && c.cat !== curCat) return false;
+                if (kw && c.name.indexOf(kw) === -1 && catMap[c.cat].indexOf(kw) === -1) return false;
+                return true;
+            });
+            var list = document.getElementById('courseList');
+            var empty = document.getElementById('emptyState');
+            if (!list) return;
+            empty.style.display = data.length ? 'none' : 'block';
+            list.innerHTML = '';
+            data.forEach(function(c){
+                var el = document.createElement('div');
+                el.className = 'card course-item';
+                el.innerHTML =
+                    '<div class="c-thumb" style="background:' + c.grad + ';">' +
+                    '<div class="mini-play"></div><span class="dur">' + c.dur + '</span></div>' +
+                    '<div class="c-info"><div class="c-name">' + c.name +
+                    '<span class="tag ' + (c.level.indexOf('高') > -1 ? 'tag-orange' : 'tag-blue') + '">' + c.level + '</span></div>' +
+                    '<div class="c-sub"><span>' + c.hot + '</span><span>' + c.dur + '</span></div></div>' +
+                    '<div class="c-acts">' +
+                    '<button class="mini-btn mini-detail" onclick="event.stopPropagation();window.openDetail(' + courses.indexOf(c) + ')">详情</button>' +
+                    '<button class="mini-btn mini-go" onclick="event.stopPropagation();window.showToast(\'开始跟练：\' + c.name + \'\')">跟练</button>' +
+                    '</div>';
+                el.addEventListener('click', function(){ window.showToast(c.name); });
+                list.appendChild(el);
+            });
+        };
+        window.searchCourses = function(kw){ window._followKw = kw; window.renderCourses(); };
+        var detailIdx = -1;
+        window.openDetail = function(i){
+            if (i < 0 || i >= courses.length) return;
+            detailIdx = i;
+            var c = courses[i];
+            document.getElementById('detailName').textContent = c.name;
+            document.getElementById('detailDesc').textContent = (catMap[c.cat] || '') + ' · ' + c.level + ' · ' + c.hot + '播放';
+            document.getElementById('dTime').textContent = c.dur;
+            document.getElementById('dKcal').textContent = c.kcal + ' kcal';
+            document.getElementById('dLevel').textContent = c.level;
+            document.getElementById('dCount').textContent = c.moves.split(' ').length + ' 组';
+            document.getElementById('detailEquip').innerHTML = c.equip.split(' ').map(function(x){ return '<span>' + x + '</span>'; }).join('');
+            document.getElementById('detailMoves').innerHTML = c.moves.split(' ').map(function(x){ return '<span>' + x + '</span>'; }).join('');
+            document.getElementById('detailFav').classList.toggle('on', c.fav);
+            document.getElementById('detailOverlay').classList.add('show');
+        };
+        window.closeDetail = function(){ document.getElementById('detailOverlay').classList.remove('show'); };
+        window.toggleDetailFav = function(){
+            if (detailIdx < 0) return;
+            courses[detailIdx].fav = !courses[detailIdx].fav;
+            document.getElementById('detailFav').classList.toggle('on', courses[detailIdx].fav);
+            window.showToast(courses[detailIdx].fav ? '已收藏' : '已取消收藏');
+            window.renderCourses();
+        };
+        window.startCourse = function(){
+            if (detailIdx < 0) return;
+            var c = courses[detailIdx];
+            window.openVideoPlayer(c.bv, c.name);
+            window.closeDetail();
+        };
+        document.getElementById('catChips').addEventListener('click', function(e){
+            var chip = e.target.closest('.chip'); if (!chip) return;
+            document.querySelectorAll('#catChips .chip').forEach(function(x){ x.classList.remove('on'); });
+            chip.classList.add('on');
+            curCat = chip.dataset.c;
+            window.renderCourses();
+        });
+        document.getElementById('courseTab').addEventListener('click', function(e){
+            var t = e.target.closest('div'); if (!t || !t.dataset.t) return;
+            document.querySelectorAll('#courseTab div').forEach(function(x){ x.classList.remove('on'); });
+            t.classList.add('on');
+            curTab = t.dataset.t;
+            window.renderCourses();
+        });
+        window.renderCourses();
+        // ── Publish page ──
+        var pubAdvOn = false;
+        window.mood = function(el) {
+            document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); c.classList.add('off'); });
+            el.classList.add('on'); el.classList.remove('off');
+        };
+        window.closeAdvSheet = function() { document.getElementById('advSheet').classList.remove('show'); };
+        window.genLog = function() {
+            window.closeAdvSheet();
+            var t = document.getElementById('pubText') ? document.getElementById('pubText').value.trim() : '';
+            document.getElementById('pvText').textContent = t ? t.slice(0, 40) : '今天练了腹部核心，状态不错！坚持第 21 天...';
+            document.getElementById('logSheet').classList.add('show');
+        };
+        window.closeLogSheet = function() { document.getElementById('logSheet').classList.remove('show'); };
+        window.togglePublishAdv = function() {
+            pubAdvOn = !pubAdvOn;
+            document.getElementById('pubSwitchTrack').classList.toggle('on', pubAdvOn);
+            document.getElementById('pubSwitchThumb').classList.toggle('on', pubAdvOn);
+            if (pubAdvOn) { document.getElementById('pubAdvModal').classList.add('show'); }
+            else { document.getElementById('pubAdvModal').classList.remove('show'); }
+        };
+        window.closePubAdv = function() { document.getElementById('pubAdvModal').classList.remove('show'); };
+        window.autoFillPub = function() {
+            document.getElementById('pfWeight').value = '72.6';
+            document.getElementById('pfFat').value = '15.2';
+            document.getElementById('pfKcal').value = '320';
+            document.getElementById('pfHbm').value = '42.5';
+            document.getElementById('pfMuscle').value = '32.8';
+            document.getElementById('pfVisceral').value = '6.5';
+            window.showToast('已导入今日数据（可手动修改）');
+        };
+        window.genPubLog = function() {
+            var d = new Date();
+            document.getElementById('plpDate').textContent = '📅 ' + d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日';
+            var textEl = document.querySelector('#publishPage .pub-text-input');
+            document.getElementById('plpText').textContent = (textEl && textEl.value.trim()) || '今天训练状态不错，继续加油～';
+            var fields = [
+                { id:'pfWeight', label:'⚖️ ', unit:' kg', cls:'c1' },
+                { id:'pfFat', label:'🧴 体脂 ', unit:'%', cls:'c2' },
+                { id:'pfKcal', label:'🔥 消耗 ', unit:'kcal', cls:'c3' },
+                { id:'pfHbm', label:'💪 HBM ', unit:' kg', cls:'c1' },
+                { id:'pfMuscle', label:'🦴 骨骼肌 ', unit:' kg', cls:'c2' },
+                { id:'pfVisceral', label:'🫄 内脏脂肪 ', unit:'', cls:'c3' }
+            ];
+            var hasAny = false, html = '';
+            fields.forEach(function(f) {
+                var el = document.getElementById(f.id);
+                var val = el ? el.value.trim() : '';
+                if (val) { hasAny = true; html += '<span class="log-chip ' + f.cls + '">' + f.label + val + f.unit + '</span>'; }
+            });
+            if (!hasAny) { window.showToast('请至少填写一项数据'); return; }
+            document.getElementById('plogRows').innerHTML = html;
+            window.closePubAdv();
+            setTimeout(function() { document.getElementById('pubLogOverlay').classList.add('show'); }, 300);
+        };
+        window.closePubLog = function() { document.getElementById('pubLogOverlay').classList.remove('show'); };
+        window.doPubPost = function() { window.closePubLog(); window.showToast('✅ 已发布到训练日志'); };
+
+        // ── 添加运动弹窗交互 ──
+        var _modalTab = 0; // 0=无氧, 1=有氧
+        window.initFloatingModal = function() {
+            // tab 切换
+            var tabs = document.querySelectorAll('#tabSwitch .tab-label');
+            var slider = document.getElementById('tabSlider');
+            tabs.forEach(function(t, i) {
+                t.onclick = function() {
+                    _modalTab = i;
+                    tabs.forEach(function(x) { x.classList.remove('active'); });
+                    this.classList.add('active');
+                    slider.style.transform = 'translateX(-' + (i * 100) + '%)';
+                };
+            });
+            // 部位按钮
+            document.querySelectorAll('#partTabs .part-btn').forEach(function(btn) {
+                btn.onclick = function() {
+                    document.querySelectorAll('#partTabs .part-btn').forEach(function(b) { b.classList.remove('active'); });
+                    this.classList.add('active');
+                    loadPresets(this.getAttribute('data-part'));
+                };
+            });
+            // 有氧预设
+            loadCardioPresets();
+            loadPresets('chest');
+        };
+        function loadPresets(part) {
+            var presets = (window.strengthPresets || {})[part] || [];
+            var drop = document.getElementById('presetDrop');
+            if (!drop) return;
+            drop.innerHTML = presets.map(function(p, i) {
+                return '<button class="preset-item' + (i===0?' on':'') + '" onclick="window.fillStrength(\'' + p.name + '\',' + p.groups + ',' + p.reps + ',' + p.weight + ');document.getElementById(\'presetCur\').textContent=\'' + p.name + '\';document.getElementById(\'presetWrap\').classList.remove(\'open\');document.getElementById(\'presetTrigger\').classList.remove(\'open\');var els=document.querySelectorAll(\'#presetDrop .preset-item\');els.forEach(function(e){e.classList.remove(\'on\')});this.classList.add(\'on\')">' + p.name + '</button>';
+            }).join('');
+            document.getElementById('presetCur').textContent = presets[0] ? presets[0].name : '选择动作';
+        }
+        function loadCardioPresets() {
+            var presets = window.cardioPresets || [];
+            var drop = document.getElementById('cardioPresetDrop');
+            if (!drop) return;
+            drop.innerHTML = presets.map(function(p, i) {
+                return '<button class="preset-item' + (i===0?' on':'') + '" onclick="window.fillCardio(\'' + p.name + '\',' + p.duration + ',' + p.distance + ',' + p.calories + ');document.getElementById(\'cardioPresetCur\').textContent=\'' + p.name + '\';document.getElementById(\'cardioPresetWrap\').classList.remove(\'open\');document.getElementById(\'cardioPresetTrigger\').classList.remove(\'open\');var els=document.querySelectorAll(\'#cardioPresetDrop .preset-item\');els.forEach(function(e){e.classList.remove(\'on\')});this.classList.add(\'on\')">' + p.name + '</button>';
+            }).join('');
+            document.getElementById('cardioPresetCur').textContent = presets[0] ? presets[0].name : '选择运动';
+        }
+        window.fillStrength = function(name, groups, reps, weight) {
+            document.getElementById('strengthName').value = name;
+            document.getElementById('sGroups').value = groups;
+            document.getElementById('sReps').value = reps;
+            document.getElementById('sWeight').value = weight;
+        };
+        window.fillCardio = function(name, duration, distance, calories) {
+            document.getElementById('cardioName').value = name;
+            document.getElementById('cDuration').value = duration;
+            document.getElementById('cDistance').value = distance;
+            document.getElementById('cCalories').value = calories;
+        };
+        window.addActionWithType = function() {
+            var name, category, detail, kcal, iconBg, iconFill;
+            if (_modalTab === 0) {
+                name = document.getElementById('strengthName').value.trim() || '自定义力量';
+                var g = document.getElementById('sGroups').value;
+                var r = document.getElementById('sReps').value;
+                var w = document.getElementById('sWeight').value;
+                detail = g + '组 × ' + r + '次 × ' + w + 'kg';
+                category = 'strength';
+                kcal = Math.round(g * r * w * 0.04);
+                iconBg = 'rgba(176,248,32,0.50)';
+                iconFill = '#4C6F00';
+            } else {
+                name = document.getElementById('cardioName').value.trim() || '自定义有氧';
+                var d = document.getElementById('cDuration').value;
+                var dist = document.getElementById('cDistance').value;
+                var cal = document.getElementById('cCalories').value;
+                detail = dist + ' km · ' + d + '分钟';
+                category = 'cardio';
+                kcal = parseInt(cal) || 300;
+                iconBg = 'rgba(255,182,246,0.50)';
+                iconFill = '#FA64DC';
+            }
+            tdWorkouts.push({ name: name, meta: detail, type: category === 'cardio' ? '有氧' : '力量' });
+            tdRenderList();
+            tdUpdateProgress();
+            window.closeModal();
+            window.showToast('已添加「' + name + '」到今日运动');
+        };
+
+        // ── 运动卡片涟漪动效 ──
+        // ═══════════════════════════════════════
+        //  Events & Init
+        // ═══════════════════════════════════════
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.switchTab('today');
+        });
+    })();
+</script>
+
+</body>
+</html>
