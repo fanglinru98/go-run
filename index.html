@@ -209,7 +209,7 @@
                         <span style="font-size:10px;color:var(--text-3);">体脂 / HBM / 趋势</span>
                         <div style="margin-left:auto;"><span class="adv-arrow" id="advArrow">▾</span></div>
                     </div>
-                    <div class="adv-dropdown" id="advDropdown">
+                    <div class="adv-dropdown" id="advDropdown" onclick="event.stopPropagation()">
                         <div class="adv-grid">
                             <label>体重 (kg)<input type="number" id="advWeight" placeholder="--" step="0.1"></label>
                             <label>体脂率 (%)<input type="number" id="advFat" placeholder="--" step="0.1"></label>
