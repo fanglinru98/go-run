@@ -1218,8 +1218,8 @@
             if (i < 0) i = pubPhotos.length - 1;
             if (i >= pubPhotos.length) i = 0;
             smCur = i;
-            ph.innerHTML = '<img src="' + pubPhotos[i] + '" alt="照片预览">' +
-                           '<span class="sm-count">' + (i + 1) + ' / ' + pubPhotos.length + '</span>';
+            var cnt = pubPhotos.length > 1 ? '<span class="sm-count">' + (i + 1) + ' / ' + pubPhotos.length + '</span>' : '';
+            ph.innerHTML = '<img src="' + pubPhotos[i] + '" alt="照片预览">' + cnt;
         }
         window.openSummary = function(){
             // 照片（发布页已上传的）
@@ -1419,8 +1419,22 @@
         // ── Publish page ──
         var pubAdvOn = false;
         window.mood = function(el) {
-            document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); c.classList.add('off'); });
-            el.classList.add('on'); el.classList.remove('off');
+            var wasOn = el.classList.contains('on');
+            // 只切换发布页的话题 chips
+            document.querySelectorAll('#publishPage .chip').forEach(function(c){ c.classList.remove('on'); c.classList.add('off'); });
+            if (!wasOn){ el.classList.add('on'); el.classList.remove('off'); }
+            // 话题写入文本框：#话题 空格分隔（再点取消则移除）
+            var tag = '#' + el.textContent.trim();
+            var pub = document.getElementById('pubText');
+            if (pub){
+                var cur = pub.value || '';
+                if (wasOn){
+                    pub.value = cur.replace(tag, '').replace(/\s{2,}/g, ' ').trim();
+                } else {
+                    if (cur.indexOf(tag) === -1) pub.value = cur ? cur + ' ' + tag : tag;
+                }
+                if (pub.oninput) pub.oninput();
+            }
         };
         window.closeAdvSheet = function() { document.getElementById('advSheet').classList.remove('show'); };
         window.genLog = function() {
