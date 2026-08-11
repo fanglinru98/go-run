@@ -74,6 +74,13 @@
                     <div style="display:flex;align-items:flex-end;justify-content:space-between;padding:0 2px;">
                         <div><h2 style="font-size:19px;font-weight:800;letter-spacing:-.05em;">今日运动</h2></div>
                     </div>
+                    <div class="reco-head" id="recoHead"><span class="reco-sub">为你推荐热门动作</span><button class="reco-close" onclick="window.closeReco()">✕</button></div>
+                    <div class="reco-grid" id="recoGrid">
+                        <div class="rg-card" onclick="window.addRecoFromGrid('平板卧推','力量','4组 × 10次 × 50kg',this)"><span class="rg-ic" style="background:var(--green-soft);color:var(--green-ink)">🏋️</span><div class="rg-info"><div class="rg-name">平板卧推</div><div class="rg-meta">4组×10次×50kg</div></div><span class="rg-plus">＋</span></div>
+                        <div class="rg-card" onclick="window.addRecoFromGrid('慢跑','有氧','5.2 km',this)"><span class="rg-ic" style="background:var(--accent);color:var(--accent-ink)">🏃</span><div class="rg-info"><div class="rg-name">慢跑</div><div class="rg-meta">5.2 km</div></div><span class="rg-plus">＋</span></div>
+                        <div class="rg-card" onclick="window.addRecoFromGrid('深蹲','力量','5组 × 12次 × 60kg',this)"><span class="rg-ic" style="background:var(--green-soft);color:var(--green-ink)">🤸</span><div class="rg-info"><div class="rg-name">深蹲</div><div class="rg-meta">5组×12次×60kg</div></div><span class="rg-plus">＋</span></div>
+                        <div class="rg-card" onclick="window.addRecoFromGrid('拉伸放松','有氧','15 min',this)"><span class="rg-ic" style="background:var(--accent);color:var(--accent-ink)">🧘</span><div class="rg-info"><div class="rg-name">拉伸放松</div><div class="rg-meta">15 min</div></div><span class="rg-plus">＋</span></div>
+                    </div>
                     <div class="chips" id="tdFilters">
                         <button class="chip on" data-f="全部">全部</button>
                         <button class="chip" data-f="力量">力量</button>
@@ -1142,7 +1149,31 @@
             window._toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 1500);
         };
 
-        // ── 进阶数据下拉展开（白框向下延伸） ──
+        // ── 运动推荐（空状态预设，方案 C 网格） ──
+        window.closeReco = function(){
+            var head = document.getElementById('recoHead');
+            var grid = document.getElementById('recoGrid');
+            if (head) head.style.display = 'none';
+            if (grid) grid.style.display = 'none';
+            window.showToast('已关闭运动推荐');
+        };
+        window.addRecoFromGrid = function(name, type, meta, el){
+            if (el){
+                el.classList.add('removing');
+                setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+            }
+            tdWorkouts.push({ name: name, meta: meta, type: type });
+            tdRenderList();
+            tdUpdateProgress();
+            window.showToast('已添加「' + name + '」到今日运动');
+            var grid = document.getElementById('recoGrid');
+            if (grid && grid.children.length === 0){
+                var head = document.getElementById('recoHead');
+                if (head) head.style.display = 'none';
+            }
+        };
+
+        // ── 进阶数据下拉展开 ──
         window.toggleAdv = function(){
             var g = document.querySelector('.adv-glass');
             var d = document.getElementById('advDropdown');
