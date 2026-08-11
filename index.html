@@ -7,6 +7,10 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#F8F6FA">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="theme-color" content="#161722">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <title>GO RUN</title>
@@ -1804,18 +1808,13 @@ body {
                 <div class="profile-section-title">账号</div>
                 <div class="profile-card" id="accountCard">
                     <div id="acctLoggedOut">
-                        <input id="acctEmail" type="email" placeholder="邮箱" style="width:100%;height:40px;border:1px solid #e6e6ec;border-radius:12px;padding:0 12px;font-size:14px;box-sizing:border-box;background:#fafafc;color:#161722;">
-                        <input id="acctPass" type="password" placeholder="密码（至少 6 位）" style="width:100%;height:40px;border:1px solid #e6e6ec;border-radius:12px;padding:0 12px;font-size:14px;box-sizing:border-box;background:#fafafc;color:#161722;margin-top:8px;">
-                        <div style="display:flex;gap:8px;margin-top:10px;">
-                            <button onclick="window.acctLogin()" style="flex:1;height:40px;border:none;border-radius:20px;background:linear-gradient(135deg,var(--purple),var(--purple-strong));color:#fff;font-size:14px;font-weight:600;">登录</button>
-                            <button onclick="window.acctSignup()" style="flex:1;height:40px;border:none;border-radius:20px;background:#f0edf7;color:#5b4a8a;font-size:14px;font-weight:600;">注册</button>
-                        </div>
-                        <div id="acctMsg" style="font-size:12px;color:#8a8a93;margin-top:8px;line-height:1.5;">登录后，运动记录自动云端同步——换手机、换浏览器，登录同一账号数据都在。</div>
+                        <button onclick="window.openAcctModal()" style="width:100%;height:48px;border:none;border-radius:24px;background:#161722;color:#fff;font-size:14px;font-weight:700;letter-spacing:.06em;cursor:pointer;box-shadow:0 6px 16px rgba(20,20,28,.18);">登录账号 <span style="color:#d9ff76;">→</span></button>
+                        <div style="font-size:12px;color:#8a8a93;margin-top:10px;text-align:center;line-height:1.7;">登录后运动记录云端同步<br>换手机、换设备都不丢</div>
                     </div>
                     <div id="acctLoggedIn" style="display:none;">
                         <div style="font-size:14px;color:#161722;">已登录：<b id="acctEmailShown" style="color:var(--purple-strong);"></b></div>
-                        <div id="acctSyncState" style="font-size:12px;color:#8a8a93;margin:6px 0 10px;">同步中…</div>
-                        <button onclick="window.acctLogout()" style="height:38px;padding:0 20px;border:1px solid #e6e6ec;border-radius:19px;background:#fff;color:#5b5b66;font-size:13px;">退出登录</button>
+                        <div id="acctSyncState" style="font-size:12px;color:#8a8a93;margin:6px 0 10px;">已同步</div>
+                        <button onclick="window.acctLogout()" style="height:38px;padding:0 20px;border:1px solid #e6e6ec;border-radius:19px;background:#fff;color:#5b5b66;font-size:13px;cursor:pointer;">退出登录</button>
                     </div>
                 </div>
                 </div>
@@ -3317,39 +3316,64 @@ body {
     });
   }
 
-  window.acctSignup = function(){
+  var acctMode = 'login';
+  function setMode(m){
+    acctMode = m;
+    var cf = document.getElementById('acctConfirm');
+    var gb = document.getElementById('acctGoBtn');
+    var sl = document.getElementById('acctSwitchLink');
+    if (m === 'signup'){
+      if (cf) cf.style.display = '';
+      if (gb) gb.innerHTML = '注 册 <span style="color:#d9ff76;">→</span>';
+      if (sl) sl.textContent = '已有账号？去登录';
+    } else {
+      if (cf) cf.style.display = 'none';
+      if (gb) gb.innerHTML = '开始运动 <span style="color:#d9ff76;">→</span>';
+      if (sl) sl.textContent = '没有账号？注册一个';
+    }
+    msg('');
+  }
+  window.openAcctModal = function(){
+    var m = document.getElementById('acctModal'); if (m) m.style.display = 'flex';
+    if (!session) setMode('login');
+    msg('');
+  };
+  window.closeAcctModal = function(){
+    var m = document.getElementById('acctModal'); if (m) m.style.display = 'none';
+  };
+  window.acctToggleMode = function(){ setMode(acctMode === 'login' ? 'signup' : 'login'); };
+  function saveSession(tk, email, uid, refresh){
+    session = { token: tk, email: email, uid: uid, refresh: refresh };
+    try { localStorage.setItem('gorun_session', JSON.stringify({ token: tk, email: email, uid: uid, refresh: refresh })); } catch(e){}
+  }
+  window.acctGo = function(){
     var email = (document.getElementById('acctEmail') || {}).value || '';
     var pass = (document.getElementById('acctPass') || {}).value || '';
     if (!email || !/\S+@\S+\.\S+/.test(email)) { msg('请输入正确的邮箱'); return; }
     if (pass.length < 6) { msg('密码至少 6 位'); return; }
-    msg('注册中…');
-    api('/auth/v1/signup', { method: 'POST', body: { email: email, password: pass } }).then(function(r){
-      if (r.ok && (r.body.id || r.body.user)){
-        msg('注册成功！已登录（如邮箱需要确认，请先到邮箱点确认链接后重新登录）');
-        session = { token: r.body.access_token, email: email, uid: (r.body.user || {}).id || (r.body.id) };
-        try { localStorage.setItem('gorun_session', JSON.stringify({ token: session.token, email: email, uid: session.uid })); } catch(e){}
-        renderAcct(); pullMerge();
-      } else if (r.body && r.body.msg){ msg(r.body.msg); }
-      else { msg('注册失败，请重试'); }
-    });
-  };
-
-  window.acctLogin = function(){
-    var email = (document.getElementById('acctEmail') || {}).value || '';
-    var pass = (document.getElementById('acctPass') || {}).value || '';
-    if (!email || !pass) { msg('请输入邮箱和密码'); return; }
-    msg('登录中…');
-    api('/auth/v1/token?grant_type=password', { method: 'POST', body: { email: email, password: pass } }).then(function(r){
-      if (r.ok && r.body.access_token){
-        session = { token: r.body.access_token, email: email, uid: r.body.user.id };
-        try { localStorage.setItem('gorun_session', JSON.stringify({ token: session.token, email: email, uid: session.uid })); } catch(e){}
-        msg('');
-        renderAcct();
-        pullMerge().then(function(){ msg(''); });
-      } else if (r.body && r.body.msg){ msg(r.body.msg); }
-      else if (r.body && r.body.error_description){ msg(r.body.error_description); }
-      else { msg('登录失败，请重试'); }
-    });
+    if (acctMode === 'signup'){
+      var c2 = (document.getElementById('acctConfirm') || {}).value || '';
+      if (c2 !== pass) { msg('两次密码不一致'); return; }
+      msg('注册中…');
+      api('/auth/v1/signup', { method: 'POST', body: { email: email, password: pass } }).then(function(r){
+        if (r.ok && (r.body.id || r.body.user)){
+          saveSession(r.body.access_token, email, (r.body.user || {}).id || (r.body.id), r.body.refresh_token);
+          window.closeAcctModal(); renderAcct(); pullMerge();
+        } else if (r.body && r.body.msg){ msg(r.body.msg); }
+        else { msg('注册失败，请重试'); }
+      });
+    } else {
+      msg('登录中…');
+      api('/auth/v1/token?grant_type=password', { method: 'POST', body: { email: email, password: pass } }).then(function(r){
+        if (r.ok && r.body.access_token){
+          saveSession(r.body.access_token, email, r.body.user.id, r.body.refresh_token);
+          window.closeAcctModal(); renderAcct();
+          pullMerge().then(function(){ msg(''); });
+        } else if (r.body && r.body.msg){ msg(r.body.msg); }
+        else if (r.body && r.body.error_description){ msg(r.body.error_description); }
+        else { msg('登录失败，请重试'); }
+      });
+    }
   };
 
   window.acctLogout = function(){
@@ -3360,23 +3384,48 @@ body {
 
   window.__syncPush = schedulePush;
 
-  // 启动：恢复登录状态
+  // 启动：恢复登录状态（token 过期自动用 refresh_token 续期）
   (function(){
+    function restore(s){
+      api('/auth/v1/user', { headers: { Authorization: 'Bearer ' + s.token } }).then(function(r){
+        if (r.ok && r.body && r.body.id){
+          session = { token: s.token, email: r.body.email || s.email, uid: r.body.id, refresh: s.refresh };
+          renderAcct(); pullMerge();
+        } else if (s.refresh){
+          api('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: s.refresh } }).then(function(r2){
+            if (r2.ok && r2.body.access_token){
+              saveSession(r2.body.access_token, s.email, (r2.body.user || {}).id || s.uid, r2.body.refresh_token || s.refresh);
+              renderAcct(); pullMerge();
+            } else {
+              try { localStorage.removeItem('gorun_session'); } catch(e){}
+            }
+          });
+        } else {
+          try { localStorage.removeItem('gorun_session'); } catch(e){}
+        }
+      });
+    }
     try {
       var s = JSON.parse(localStorage.getItem('gorun_session') || 'null');
-      if (s && s.token){
-        api('/auth/v1/user', { headers: { Authorization: 'Bearer ' + s.token } }).then(function(r){
-          if (r.ok && r.body && r.body.id){
-            session = { token: s.token, email: r.body.email || s.email, uid: r.body.id };
-            renderAcct(); pullMerge();
-          } else {
-            try { localStorage.removeItem('gorun_session'); } catch(e){}
-          }
-        });
-      }
+      if (s && s.token) restore(s);
     } catch(e){}
   })();
 })();
 </script>
+
+<!-- ===== 登录弹窗（G 方案：胶囊大按钮） ===== -->
+<div id="acctModal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:300;background:rgba(20,16,32,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);">
+  <div style="width:310px;background:#fff;border-radius:32px;padding:34px 24px 26px;box-shadow:0 24px 60px rgba(30,20,60,.25);position:relative;">
+    <button onclick="window.closeAcctModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(120,110,140,.12);color:#6b6b76;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    <div style="text-align:center;font-size:28px;font-weight:800;letter-spacing:-.05em;color:#161722;">GO RUN</div>
+    <div style="text-align:center;font-size:12px;color:#9a9aa3;margin:6px 0 22px;">每一步，都被记录</div>
+    <input id="acctEmail" type="email" placeholder="邮箱" style="width:100%;height:52px;border-radius:26px;background:#f6f5fa;border:1px solid #eeeef4;padding:0 16px;font-size:14px;text-align:center;outline:none;color:#161722;box-sizing:border-box;">
+    <input id="acctPass" type="password" placeholder="密码" style="width:100%;height:52px;border-radius:26px;background:#f6f5fa;border:1px solid #eeeef4;padding:0 16px;font-size:14px;text-align:center;outline:none;color:#161722;box-sizing:border-box;margin-top:12px;">
+    <input id="acctConfirm" type="password" placeholder="确认密码" style="width:100%;height:52px;border-radius:26px;background:#f6f5fa;border:1px solid #eeeef4;padding:0 16px;font-size:14px;text-align:center;outline:none;color:#161722;box-sizing:border-box;margin-top:12px;display:none;">
+    <button id="acctGoBtn" onclick="window.acctGo()" style="width:100%;height:52px;border:none;border-radius:26px;background:#161722;color:#fff;font-size:15px;font-weight:700;letter-spacing:.1em;cursor:pointer;margin-top:16px;">开始运动 <span style="color:#d9ff76;">→</span></button>
+    <div style="text-align:center;font-size:12px;color:#8a8a93;margin-top:14px;"><a id="acctSwitchLink" href="javascript:;" onclick="window.acctToggleMode()" style="color:#161722;font-weight:600;text-decoration:none;">没有账号？注册一个</a></div>
+    <div id="acctMsg" style="text-align:center;font-size:12px;color:#e0533d;margin-top:8px;min-height:16px;"></div>
+  </div>
+</div>
 </body>
 </html>
