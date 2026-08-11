@@ -1801,6 +1801,23 @@ body {
                     <div class="name">GO RUN</div>
                     <div class="sub">等级 Lv.5 · 加入 2026-07-01</div>
                     <button class="edit-btn" onclick="window.showToast('✎ 编辑资料功能开发中')">编辑资料</button>
+                <div class="profile-section-title">账号</div>
+                <div class="profile-card" id="accountCard">
+                    <div id="acctLoggedOut">
+                        <input id="acctEmail" type="email" placeholder="邮箱" style="width:100%;height:40px;border:1px solid #e6e6ec;border-radius:12px;padding:0 12px;font-size:14px;box-sizing:border-box;background:#fafafc;color:#161722;">
+                        <input id="acctPass" type="password" placeholder="密码（至少 6 位）" style="width:100%;height:40px;border:1px solid #e6e6ec;border-radius:12px;padding:0 12px;font-size:14px;box-sizing:border-box;background:#fafafc;color:#161722;margin-top:8px;">
+                        <div style="display:flex;gap:8px;margin-top:10px;">
+                            <button onclick="window.acctLogin()" style="flex:1;height:40px;border:none;border-radius:20px;background:linear-gradient(135deg,var(--purple),var(--purple-strong));color:#fff;font-size:14px;font-weight:600;">登录</button>
+                            <button onclick="window.acctSignup()" style="flex:1;height:40px;border:none;border-radius:20px;background:#f0edf7;color:#5b4a8a;font-size:14px;font-weight:600;">注册</button>
+                        </div>
+                        <div id="acctMsg" style="font-size:12px;color:#8a8a93;margin-top:8px;line-height:1.5;">登录后，运动记录自动云端同步——换手机、换浏览器，登录同一账号数据都在。</div>
+                    </div>
+                    <div id="acctLoggedIn" style="display:none;">
+                        <div style="font-size:14px;color:#161722;">已登录：<b id="acctEmailShown" style="color:var(--purple-strong);"></b></div>
+                        <div id="acctSyncState" style="font-size:12px;color:#8a8a93;margin:6px 0 10px;">同步中…</div>
+                        <button onclick="window.acctLogout()" style="height:38px;padding:0 20px;border:1px solid #e6e6ec;border-radius:19px;background:#fff;color:#5b5b66;font-size:13px;">退出登录</button>
+                    </div>
+                </div>
                 </div>
                 <div class="profile-section-title">训练目标</div>
                 <div class="profile-card">
@@ -2187,7 +2204,7 @@ body {
       }
     } catch(e){}
   })();
-  function saveWorkouts(){ STORE.set('tdWorkouts', tdWorkouts); STORE.set('tdCompleted', tdCompleted); }
+  function saveWorkouts(){ STORE.set('tdWorkouts', tdWorkouts); STORE.set('tdCompleted', tdCompleted); if (window.__syncPush) window.__syncPush(); }
   var tdFilter = '全部';
   var dragMode = false;   // 拖拽模式
   var skipFlip = false;   // 拖拽松手时禁用本次 FLIP（避免回滑误导）
@@ -3212,5 +3229,154 @@ body {
     })();
 </script>
 
+
+<script>
+(function(){
+  var SB_URL = 'https://ljzawblcyuwvioazjhiv.supabase.co';
+  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqemF3YmxjeXV3dmlvYXpqaGl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MzY0NDAsImV4cCI6MjEwMjAxMjQ0MH0._osewlf207aS9K78wdDt1EoZbrlIzfcfr2suenWFe4E';
+  var KEYS = ['tdWorkouts', 'tdCompleted', 'recoHidden'];
+  var session = null;
+  var pushTimer = null;
+
+  function lsGet(k){ try { var v = localStorage.getItem('gorun_' + k); return v === null ? null : JSON.parse(v); } catch(e){ return null; } }
+  function lsSet(k, v){ try { localStorage.setItem('gorun_' + k, JSON.stringify(v)); } catch(e){} }
+  function tsGet(k){ try { return parseInt(localStorage.getItem('gorun_ts_' + k) || '0', 10); } catch(e){ return 0; } }
+  function tsSet(k){ try { localStorage.setItem('gorun_ts_' + k, String(Date.now())); } catch(e){} }
+
+  function api(path, opts){
+    opts = opts || {};
+    opts.headers = opts.headers || {};
+    opts.headers['apikey'] = SB_KEY;
+    if (!opts.headers['Authorization'] && session) opts.headers['Authorization'] = 'Bearer ' + session.token;
+    if (opts.body && typeof opts.body === 'string') opts.headers['Content-Type'] = 'application/json';
+    if (opts.body && typeof opts.body !== 'string') { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(opts.body); }
+    return fetch(SB_URL + path, opts).then(function(r){
+      return r.json().then(function(j){ return { ok: r.ok, status: r.status, body: j }; }).catch(function(){ return { ok: r.ok, status: r.status, body: null }; });
+    });
+  }
+
+  function renderAcct(){
+    var lo = document.getElementById('acctLoggedOut');
+    var li = document.getElementById('acctLoggedIn');
+    var em = document.getElementById('acctEmailShown');
+    var st = document.getElementById('acctSyncState');
+    if (!lo || !li) return;
+    if (session){
+      lo.style.display = 'none'; li.style.display = 'block';
+      if (em) em.textContent = session.email;
+      if (st) st.textContent = '已同步';
+    } else {
+      li.style.display = 'none'; lo.style.display = 'block';
+    }
+  }
+  function msg(t){ var m = document.getElementById('acctMsg'); if (m) m.textContent = t; }
+
+  function pushKey(k){
+    var v = lsGet(k);
+    if (v === null) return;
+    if (!session) return;
+    tsSet(k);
+    api('/rest/v1/go_run_data?on_conflict=user_id,data_key', {
+      method: 'POST',
+      body: { user_id: session.uid, data_key: k, data: v, updated_at: new Date().toISOString() }
+    });
+  }
+  function schedulePush(){
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(function(){ KEYS.forEach(pushKey); }, 600);
+  }
+
+  function applyRecoHidden(){
+    if (lsGet('recoHidden')){
+      var hd = document.getElementById('recoHead'); if (hd) hd.style.display = 'none';
+      var gr = document.getElementById('recoGrid'); if (gr) gr.style.display = 'none';
+    }
+  }
+
+  function pullMerge(){
+    if (!session) return Promise.resolve();
+    return api('/rest/v1/go_run_data?select=data_key,data,updated_at&user_id=eq.' + session.uid).then(function(r){
+      if (!r.ok) return;
+      (r.body || []).forEach(function(row){
+        var localTs = tsGet(row.data_key);
+        var cloudTs = new Date(row.updated_at).getTime();
+        if (cloudTs > localTs){
+          lsSet(row.data_key, row.data);
+          try { localStorage.setItem('gorun_ts_' + row.data_key, String(cloudTs)); } catch(e){}
+        } else if (localTs > cloudTs){
+          pushKey(row.data_key);
+        }
+      });
+      // 云端覆盖后写回内存变量并渲染
+      var w = lsGet('tdWorkouts'); if (w && w.length) { try { tdWorkouts = w; } catch(e){} }
+      var d = lsGet('tdCompleted'); if (d && d.length) { try { tdCompleted = d; } catch(e){} }
+      applyRecoHidden();
+      try { if (typeof tdRenderList === 'function') tdRenderList(); } catch(e){}
+      try { if (typeof tdUpdateProgress === 'function') tdUpdateProgress(); } catch(e){}
+      var st = document.getElementById('acctSyncState'); if (st) st.textContent = '已同步';
+    });
+  }
+
+  window.acctSignup = function(){
+    var email = (document.getElementById('acctEmail') || {}).value || '';
+    var pass = (document.getElementById('acctPass') || {}).value || '';
+    if (!email || !/\S+@\S+\.\S+/.test(email)) { msg('请输入正确的邮箱'); return; }
+    if (pass.length < 6) { msg('密码至少 6 位'); return; }
+    msg('注册中…');
+    api('/auth/v1/signup', { method: 'POST', body: { email: email, password: pass } }).then(function(r){
+      if (r.ok && (r.body.id || r.body.user)){
+        msg('注册成功！已登录（如邮箱需要确认，请先到邮箱点确认链接后重新登录）');
+        session = { token: r.body.access_token, email: email, uid: (r.body.user || {}).id || (r.body.id) };
+        try { localStorage.setItem('gorun_session', JSON.stringify({ token: session.token, email: email, uid: session.uid })); } catch(e){}
+        renderAcct(); pullMerge();
+      } else if (r.body && r.body.msg){ msg(r.body.msg); }
+      else { msg('注册失败，请重试'); }
+    });
+  };
+
+  window.acctLogin = function(){
+    var email = (document.getElementById('acctEmail') || {}).value || '';
+    var pass = (document.getElementById('acctPass') || {}).value || '';
+    if (!email || !pass) { msg('请输入邮箱和密码'); return; }
+    msg('登录中…');
+    api('/auth/v1/token?grant_type=password', { method: 'POST', body: { email: email, password: pass } }).then(function(r){
+      if (r.ok && r.body.access_token){
+        session = { token: r.body.access_token, email: email, uid: r.body.user.id };
+        try { localStorage.setItem('gorun_session', JSON.stringify({ token: session.token, email: email, uid: session.uid })); } catch(e){}
+        msg('');
+        renderAcct();
+        pullMerge().then(function(){ msg(''); });
+      } else if (r.body && r.body.msg){ msg(r.body.msg); }
+      else if (r.body && r.body.error_description){ msg(r.body.error_description); }
+      else { msg('登录失败，请重试'); }
+    });
+  };
+
+  window.acctLogout = function(){
+    session = null;
+    try { localStorage.removeItem('gorun_session'); } catch(e){}
+    renderAcct();
+  };
+
+  window.__syncPush = schedulePush;
+
+  // 启动：恢复登录状态
+  (function(){
+    try {
+      var s = JSON.parse(localStorage.getItem('gorun_session') || 'null');
+      if (s && s.token){
+        api('/auth/v1/user', { headers: { Authorization: 'Bearer ' + s.token } }).then(function(r){
+          if (r.ok && r.body && r.body.id){
+            session = { token: s.token, email: r.body.email || s.email, uid: r.body.id };
+            renderAcct(); pullMerge();
+          } else {
+            try { localStorage.removeItem('gorun_session'); } catch(e){}
+          }
+        });
+      }
+    } catch(e){}
+  })();
+})();
+</script>
 </body>
 </html>
