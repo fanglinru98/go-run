@@ -963,15 +963,15 @@
   tdRenderCal();
   tdRenderList();
   tdUpdateProgress();
-  // 滚动到今天并居中（等布局完成后，按真实坐标计算）
+  // 滚动到今天并居中（滚动容器是 .cal-strip，不是内容层）
   requestAnimationFrame(function(){
     var r = document.getElementById('tdCalRow');
-    var strip = r ? r.parentElement : null;
+    var strip = r ? r.parentElement : null;   // .cal-strip（overflow-x:auto 的滚动容器）
     var sel = r ? r.querySelector('.cal-cell.sel') : null;
-    if (r && strip && sel){
+    if (strip && sel){
       var sr = strip.getBoundingClientRect();
       var el = sel.getBoundingClientRect();
-      r.scrollLeft = Math.max(0, (el.left - sr.left) + el.width / 2 - sr.width / 2);
+      strip.scrollLeft = Math.max(0, (el.left - sr.left) + el.width / 2 - sr.width / 2);
     }
   });
 
