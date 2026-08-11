@@ -2170,6 +2170,24 @@ body {
   var tdSelected = String(new Date().getDate());          // 选中今天
   var tdWorkouts = [];                                     // 从空白开始记录
   var tdCompleted = [];
+  // ── 本地持久化（localStorage，刷新不丢失） ──
+  var STORE = {
+    get: function(k, d){ try { var v = localStorage.getItem('gorun_' + k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+    set: function(k, v){ try { localStorage.setItem('gorun_' + k, JSON.stringify(v)); } catch(e){} }
+  };
+  (function(){
+    try {
+      var saved = STORE.get('tdWorkouts', null);
+      if (saved && saved.length) tdWorkouts = saved;
+      var done = STORE.get('tdCompleted', null);
+      if (done && done.length) tdCompleted = done;
+      if (STORE.get('recoHidden', false)){
+        var hd = document.getElementById('recoHead'); if (hd) hd.style.display = 'none';
+        var gr = document.getElementById('recoGrid'); if (gr) gr.style.display = 'none';
+      }
+    } catch(e){}
+  })();
+  function saveWorkouts(){ STORE.set('tdWorkouts', tdWorkouts); STORE.set('tdCompleted', tdCompleted); }
   var tdFilter = '全部';
   var dragMode = false;   // 拖拽模式
   var skipFlip = false;   // 拖拽松手时禁用本次 FLIP（避免回滑误导）
@@ -2273,6 +2291,7 @@ body {
         if (p > -1) tdCompleted.splice(p, 1); else tdCompleted.push(orig);
         if (!wasDone) ringCelebrate();
         tdUpdateProgress(); tdRenderList();
+        saveWorkouts();
       };
       // 设置菜单
       var more = card.querySelector('.wk-more');
@@ -2357,6 +2376,7 @@ body {
             tdWorkouts.unshift(pinItem);
           }
           tdCompleted = doneObjs.map(function(o){ return tdWorkouts.indexOf(o); });
+          saveWorkouts();
           // 拖动中已实时让位，松手直接静默重排（不播回滑动画）
           skipFlip = true;
           tdUpdateProgress(); tdRenderList();
@@ -2432,6 +2452,7 @@ body {
         tdCompleted = doneObjs.map(function(o){ return tdWorkouts.indexOf(o); }).filter(function(p){ return p > -1; });
         tdUpdateProgress(); tdRenderList();
         window.showToast('已删除');
+        saveWorkouts();
       } else if (act === 'pin'){
         var item = tdWorkouts[idx];
         var doneObjs2 = tdCompleted.map(function(i){ return tdWorkouts[i]; });
@@ -2446,6 +2467,7 @@ body {
           tdCompleted = doneObjs2.map(function(o){ return tdWorkouts.indexOf(o); });
           tdRenderList();
           window.showToast('已取消置顶');
+          saveWorkouts();
         } else {
           // 置顶：记录原位置 + 标记 + 移到顶部
           item._origIdx = idx;
@@ -2456,6 +2478,7 @@ body {
           tdCompleted = doneObjs2.map(function(o){ return tdWorkouts.indexOf(o); });
           tdRenderList();
           window.showToast('已置顶');
+          saveWorkouts();
         }
       }
     };
@@ -2517,6 +2540,7 @@ body {
     }
     window.closeEdit();
     tdRenderList();
+    saveWorkouts();
     window.showToast('已保存');
   };
 
@@ -2719,6 +2743,7 @@ body {
             var grid = document.getElementById('recoGrid');
             if (head) head.style.display = 'none';
             if (grid) grid.style.display = 'none';
+            STORE.set('recoHidden', true);
             window.showToast('已关闭运动推荐');
         };
         window.addRecoFromGrid = function(name, type, meta, el){
@@ -2729,11 +2754,13 @@ body {
             tdWorkouts.push({ name: name, meta: meta, type: type });
             tdRenderList();
             tdUpdateProgress();
+            saveWorkouts();
             window.showToast('已添加「' + name + '」到今日运动');
             var grid = document.getElementById('recoGrid');
             if (grid && grid.children.length === 0){
                 var head = document.getElementById('recoHead');
                 if (head) head.style.display = 'none';
+                STORE.set('recoHidden', true);
             }
         };
 
@@ -2873,6 +2900,7 @@ body {
             tdWorkouts.push({ name: name, meta: detail, type: isCardio ? '有氧' : '力量' });
             tdRenderList();
             tdUpdateProgress();
+            saveWorkouts();
             window.showToast('已添加「' + name + '」到今日运动');
         };
 
