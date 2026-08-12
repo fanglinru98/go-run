@@ -2921,8 +2921,22 @@ body {
             if (!file || pubPhotos.length >= 3) return;
             var reader = new FileReader();
             reader.onload = function(){
-              pubPhotos.push(reader.result);
-              renderPhotoSlots();
+              // canvas 压缩：最长边 1280、JPEG 0.8（防 localStorage 超限）
+              var img = new Image();
+              img.onload = function(){
+                var maxW = 1280;
+                var scale = Math.min(1, maxW / Math.max(img.width, img.height));
+                var w = Math.max(1, Math.round(img.width * scale));
+                var hh = Math.max(1, Math.round(img.height * scale));
+                var cv = document.createElement('canvas');
+                cv.width = w; cv.height = hh;
+                cv.getContext('2d').drawImage(img, 0, 0, w, hh);
+                var url = cv.toDataURL('image/jpeg', 0.8);
+                pubPhotos.push(url);
+                renderPhotoSlots();
+              };
+              img.onerror = function(){ pubPhotos.push(reader.result); renderPhotoSlots(); };
+              img.src = reader.result;
             };
             reader.readAsDataURL(file);
             input.value = '';
