@@ -2894,8 +2894,12 @@ body {
         window.pickPhoto = function(input){
             var file = input.files && input.files[0];
             if (!file || pubPhotos.length >= 3) return;
-            pubPhotos.push(URL.createObjectURL(file));
-            renderPhotoSlots();
+            var reader = new FileReader();
+            reader.onload = function(){
+              pubPhotos.push(reader.result);
+              renderPhotoSlots();
+            };
+            reader.readAsDataURL(file);
             input.value = '';
             window.showToast('📷 照片已添加');
         };
@@ -2995,7 +2999,7 @@ body {
             var acts = (document.getElementById('smActs') || {}).textContent || '';
             var dur = (document.getElementById('smDur') || {}).textContent || '';
             var logs = STORE.get('logs', []);
-            logs.unshift({ id: Date.now(), text: text, mood: mood, kcal: kcal, acts: acts, dur: dur, time: Date.now() });
+            logs.unshift({ id: Date.now(), text: text, mood: mood, kcal: kcal, acts: acts, dur: dur, time: Date.now(), photos: (typeof pubPhotos !== 'undefined' ? pubPhotos.slice() : []) });
             STORE.set('logs', logs.slice(0, 300));
             window.closeSummaryModal();
             window.showToast('✅ 已发布训练日志');
@@ -3030,7 +3034,8 @@ body {
           wall.innerHTML = shown.map(function(g, i){
             var meta = MOOD_META[g.mood] || MOOD_DEFAULT;
             var title = (g.text || '记录了一次训练').split('\n')[0];
-            return '<div class="J2-card" onclick="window.openLogDetail(' + i + ')"><div class="pic" style="background:' + meta.grad + ';">' + meta.emoji + '</div><div class="bd"><div class="t">' + title + '</div></div></div>';
+            var ph = (g.photos && g.photos.length) ? '<img src="' + g.photos[0] + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">' : meta.emoji;
+            return '<div class="J2-card" onclick="window.openLogDetail(' + i + ')"><div class="pic" style="background:' + meta.grad + ';">' + ph + '</div><div class="bd"><div class="t">' + title + '</div></div></div>';
           }).join('');
           if (isMock){
             var hd = document.createElement('div');
@@ -3059,9 +3064,18 @@ body {
           LGD.idx = i; LGD.logs = logs;
           var meta = MOOD_META[g.mood] || MOOD_DEFAULT;
           var svg = (LGD_META[g.mood] || {}).svg || LGD_DEFAULT;
+          var photos = g.photos || [];
+          LGD.photos = photos; LGD.cur = 0;
           document.getElementById('lgdImg').style.background = meta.grad;
-          document.getElementById('lgdMain').innerHTML = svg;
-          document.getElementById('lgdCnt').style.display = 'none';
+          var cntEl = document.getElementById('lgdCnt');
+          if (photos.length > 0){
+            showLgdPhoto(0);
+            cntEl.style.display = photos.length > 1 ? '' : 'none';
+            if (photos.length > 1) cntEl.textContent = '1 / ' + photos.length;
+          } else {
+            document.getElementById('lgdMain').innerHTML = svg;
+            cntEl.style.display = 'none';
+          }
           document.getElementById('lgdDate').textContent = fmtLogDate(g.time);
           document.getElementById('lgdTitle').textContent = (g.text || '记录了一次训练').split('\n')[0];
           document.getElementById('lgdTag').textContent = g.mood || '训练打卡';
@@ -3074,9 +3088,28 @@ body {
           document.getElementById('lgdTime').textContent = fmtLogTime(g.time);
           document.getElementById('lgdOverlay').style.display = 'block';
         };
+        function showLgdPhoto(i){
+          if (!LGD.photos || !LGD.photos.length) return;
+          LGD.cur = ((i % LGD.photos.length) + LGD.photos.length) % LGD.photos.length;
+          document.getElementById('lgdMain').innerHTML = '<img src="' + LGD.photos[LGD.cur] + '" alt="">';
+          document.getElementById('lgdCnt').textContent = (LGD.cur + 1) + ' / ' + LGD.photos.length;
+        }
+        (function(){
+          var el = document.getElementById('lgdImg');
+          var sx = 0, sy = 0;
+          el.addEventListener('touchstart', function(e){ sx = e.changedTouches[0].clientX; sy = e.changedTouches[0].clientY; }, { passive: true });
+          el.addEventListener('touchend', function(e){
+            var dx = e.changedTouches[0].clientX - sx;
+            var dy = e.changedTouches[0].clientY - sy;
+            if (LGD.photos && LGD.photos.length > 1 && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
+              showLgdPhoto(LGD.cur + (dx < 0 ? 1 : -1));
+            }
+          }, { passive: true });
+        })();
         window.closeLogDetail = function(){
           document.getElementById('lgdOverlay').style.display = 'none';
           document.getElementById('lgdPop').classList.remove('show');
+          LGD.photos = null;
         };
         document.getElementById('lgdPop').addEventListener('click', function(e){
           var btn = e.target.closest('button'); if (!btn) return;
