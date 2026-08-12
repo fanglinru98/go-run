@@ -1638,6 +1638,29 @@ body {
         .pf-cal .d.dim{color:#C9C6D2}
         .pf-cal .d.tr{color:#E86FB9;font-weight:700}
         .pf-cal .d.today{background:#FFB6F6;color:#fff;font-weight:800}
+        /* V1 一体模块：头像+统计+月历 */
+        .hmod{margin:14px 22px 0;border-radius:24px;padding:16px;background:linear-gradient(170deg,#FDF4FB 0%,#F6F1FF 100%);border:1px solid rgba(255,255,255,.9);box-shadow:0 10px 28px rgba(120,90,180,.12)}
+        .hmod .hd{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px dashed rgba(167,139,250,.25);margin-bottom:14px}
+        .hmod .av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#FFB6F6,#A78BFA);display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;border:3px solid #fff;box-shadow:0 8px 20px rgba(167,139,250,.35);flex-shrink:0}
+        .hmod .nm{font-size:16px;font-weight:800;color:#3A2E3B}
+        .hmod .lv{font-size:10px;color:#8E8E93;margin-top:2px}
+        .hmod .bd{display:flex;gap:10px}
+        .hmod .stats{display:flex;flex-direction:column;gap:9px;width:36%}
+        .hmod .stat{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);border-radius:14px;padding:9px 10px;box-shadow:0 4px 14px rgba(120,90,180,.08);display:flex;align-items:center;gap:9px;flex:1}
+        .hmod .stat .si{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .hmod .stat .si svg{width:15px;height:15px}
+        .hmod .stat .tx{display:flex;flex-direction:column;justify-content:center}
+        .hmod .stat .tx b{font-size:13px;line-height:1.1;color:#3A2E3B}
+        .hmod .stat .tx span{font-size:7px;color:#8E8E93;margin-top:3px}
+        .hmod .cal{flex:1;background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);border-radius:14px;padding:10px 8px 8px;box-shadow:0 4px 14px rgba(120,90,180,.08);display:flex;flex-direction:column;justify-content:center}
+        .hmod .cal .mt{display:grid;grid-template-columns:repeat(7,1fr);padding:0 0 7px;font-size:13px;color:#3A2E3B;font-weight:700}
+        .hmod .cal .mt span{grid-column:1;text-align:center}
+        .hmod .cal .wd{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:6px;color:#B0ADB8;margin-bottom:3px}
+        .hmod .cal .g{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+        .hmod .cal .d{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;color:#5B5B66;margin:0 auto}
+        .hmod .cal .d.dim{color:#C9C6D2}
+        .hmod .cal .d.tr{color:#E86FB9;font-weight:700}
+        .hmod .cal .d.today{background:#FFB6F6;color:#fff;font-weight:800}
     </style>
 </head>
 <body>
@@ -1859,26 +1882,30 @@ body {
         </div>
                         <!-- ===== 个人页面（内联 HTML） ===== -->
         <div id="profilePage">
-            <div class="profile-avatar-center" style="padding:26px 0 0;">
-                <div class="avatar" onclick="window.showToast('📷 更换头像功能开发中')"></div>
-                <div class="name">GO RUN</div>
-                <div class="sub">等级 Lv.5 · 加入 2026-07-01</div>
-            </div>
-            <div class="pf-split">
-                <div class="pf-left">
-                    <div class="pf-stat"><div class="si" style="background:rgba(255,182,246,.25);"><svg viewBox="0 0 24 24" fill="none" stroke="#E86FB9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/><path d="m9 15 2 2 4-4"/></svg></div><div class="tx"><b>5/7</b><span>本周训练</span></div></div>
-                    <div class="pf-stat"><div class="si" style="background:rgba(167,139,250,.2);"><svg viewBox="0 0 24 24" fill="none" stroke="#8B6FE8" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="tx"><b>45min</b><span>平均时长</span></div></div>
-                    <div class="pf-stat"><div class="si" style="background:linear-gradient(135deg,#FFF3C4,#FFD24A);"><svg viewBox="0 0 24 24" fill="none" stroke="#C8961E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M8.5 13 7 21l5-2.5L17 21l-1.5-8"/></svg></div><div class="tx"><b>12</b><span>荣誉勋章</span></div></div>
+            <div class="hmod">
+                <div class="hd">
+                    <div class="av">🏃</div>
+                    <div>
+                        <div class="nm">GO RUN</div>
+                        <div class="lv">等级 Lv.5 · 加入 2026-07-01</div>
+                    </div>
                 </div>
-                <div class="pf-cal">
-                    <div class="mt"><span>7月</span></div>
-                    <div class="wd"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
-                    <div class="g">
-                        <span class="d dim">29</span><span class="d dim">30</span><span class="d">1</span><span class="d tr">2</span><span class="d">3</span><span class="d">4</span><span class="d">5</span>
-                        <span class="d">6</span><span class="d">7</span><span class="d tr">8</span><span class="d">9</span><span class="d">10</span><span class="d">11</span><span class="d tr">12</span>
-                        <span class="d">13</span><span class="d">14</span><span class="d">15</span><span class="d">16</span><span class="d tr">17</span><span class="d">18</span><span class="d">19</span>
-                        <span class="d">20</span><span class="d">21</span><span class="d">22</span><span class="d">23</span><span class="d">24</span><span class="d today tr">25</span><span class="d">26</span>
-                        <span class="d">27</span><span class="d">28</span><span class="d">29</span><span class="d">30</span><span class="d">31</span><span class="d dim">1</span><span class="d dim">2</span>
+                <div class="bd">
+                    <div class="stats">
+                        <div class="stat"><div class="si" style="background:rgba(255,182,246,.25);"><svg viewBox="0 0 24 24" fill="none" stroke="#E86FB9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/><path d="m9 15 2 2 4-4"/></svg></div><div class="tx"><b>5/7</b><span>本周训练</span></div></div>
+                        <div class="stat"><div class="si" style="background:rgba(167,139,250,.2);"><svg viewBox="0 0 24 24" fill="none" stroke="#8B6FE8" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="tx"><b>45min</b><span>平均时长</span></div></div>
+                        <div class="stat"><div class="si" style="background:linear-gradient(135deg,#FFF3C4,#FFD24A);"><svg viewBox="0 0 24 24" fill="none" stroke="#C8961E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M8.5 13 7 21l5-2.5L17 21l-1.5-8"/></svg></div><div class="tx"><b>12</b><span>荣誉勋章</span></div></div>
+                    </div>
+                    <div class="cal">
+                        <div class="mt"><span>7月</span></div>
+                        <div class="wd"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+                        <div class="g">
+                            <span class="d dim">29</span><span class="d dim">30</span><span class="d">1</span><span class="d tr">2</span><span class="d">3</span><span class="d">4</span><span class="d">5</span>
+                            <span class="d">6</span><span class="d">7</span><span class="d tr">8</span><span class="d">9</span><span class="d">10</span><span class="d">11</span><span class="d tr">12</span>
+                            <span class="d">13</span><span class="d">14</span><span class="d">15</span><span class="d">16</span><span class="d tr">17</span><span class="d">18</span><span class="d">19</span>
+                            <span class="d">20</span><span class="d">21</span><span class="d">22</span><span class="d">23</span><span class="d">24</span><span class="d today tr">25</span><span class="d">26</span>
+                            <span class="d">27</span><span class="d">28</span><span class="d">29</span><span class="d">30</span><span class="d">31</span><span class="d dim">1</span><span class="d dim">2</span>
+                        </div>
                     </div>
                 </div>
             </div>
