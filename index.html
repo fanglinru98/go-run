@@ -2725,6 +2725,7 @@ body {
                 document.getElementById('pageContainer').classList.add('hidden');
                 document.getElementById('profilePage').classList.add('active');
                 renderProfileCalendar();
+                if (typeof renderLogWall === 'function') renderLogWall();
                 return;
             }
 
