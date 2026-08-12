@@ -140,7 +140,7 @@ body {
 #followPage { padding: 0 18px 70px; }
 #healthPage { padding: 0 18px 180px; }
 #publishPage { padding: 0 18px 70px; }
-#profilePage { padding: 0 18px 150px; }
+#profilePage { padding: 0 0 150px; }
 
 /* 日历条：无渐隐、数字严格对齐 */
 #tdCalRow { display:flex; align-items:center; justify-content:space-around; gap:0; padding:0; }
@@ -1825,43 +1825,41 @@ body {
         </div>
                         <!-- ===== 个人页面（内联 HTML） ===== -->
         <div id="profilePage">
-            <div class="profile-flex">
-                <div class="profile-avatar-center">
-                    <div class="avatar" onclick="window.showToast('📷 更换头像功能开发中')"></div>
-                    <div class="name">GO RUN</div>
-                    <div class="sub">等级 Lv.5 · 加入 2026-07-01</div>
-                <div class="J2-social">
-                    <div class="s"><b>5/7</b><span>本周训练</span></div>
-                    <div class="s"><b>45min</b><span>平均时长</span></div>
-                    <div class="s"><b>12</b><span>荣誉勋章</span></div>
-                </div>
-                <div class="profile-section-title">账号</div>
-                <div id="accountCard">
-                    <div id="acctLoggedOut">
-                        <button onclick="window.openAcctModal()" style="width:100%;height:46px;border:none;border-radius:23px;background:linear-gradient(135deg,#A78BFA,#8B6FE8);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 8px 18px rgba(139,92,246,.3);">登录账号</button>
-                        <div style="font-size:9px;color:#B0ADB8;text-align:center;margin-top:6px;">登录后云端同步</div>
-                    </div>
-                    <div id="acctLoggedIn" style="display:none;">
-                        <div style="font-size:14px;color:#161722;">已登录：<b id="acctEmailShown" style="color:var(--purple-strong);"></b></div>
-                        <div id="acctSyncState" style="font-size:12px;color:#8a8a93;margin:6px 0 10px;">已同步</div>
-                        <button onclick="window.acctLogout()" style="height:38px;padding:0 20px;border:1px solid #e6e6ec;border-radius:19px;background:#fff;color:#5b5b66;font-size:13px;cursor:pointer;">退出登录</button>
-                    </div>
-                </div>
-                </div>
-                <div class="J2-cal">
-                    <div class="h"><b>7月 2026</b><span>训练 5 天</span></div>
-                    <div class="wd"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
-                    <div class="g">
-                        <span class="d dim">29</span><span class="d dim">30</span><span class="d">1</span><span class="d tr">2</span><span class="d">3</span><span class="d">4</span><span class="d">5</span>
-                        <span class="d">6</span><span class="d">7</span><span class="d tr">8</span><span class="d">9</span><span class="d">10</span><span class="d">11</span><span class="d tr">12</span>
-                        <span class="d">13</span><span class="d">14</span><span class="d">15</span><span class="d">16</span><span class="d tr">17</span><span class="d">18</span><span class="d">19</span>
-                        <span class="d">20</span><span class="d">21</span><span class="d">22</span><span class="d">23</span><span class="d">24</span><span class="d today tr">25</span><span class="d">26</span>
-                        <span class="d">27</span><span class="d">28</span><span class="d">29</span><span class="d">30</span><span class="d">31</span><span class="d dim">1</span><span class="d dim">2</span>
-                    </div>
-                </div>
-                <div class="profile-section-title wall-title">训练日志<span class="wall-count" id="wallCount">共 0 条</span></div>
-                <div class="J2-wall" id="logWall"></div>
+            <div class="profile-avatar-center" style="padding:26px 0 0;">
+                <div class="avatar" onclick="window.showToast('📷 更换头像功能开发中')"></div>
+                <div class="name">GO RUN</div>
+                <div class="sub">等级 Lv.5 · 加入 2026-07-01</div>
             </div>
+            <div class="J2-social">
+                <div class="s"><b>5/7</b><span>本周训练</span></div>
+                <div class="s"><b>45min</b><span>平均时长</span></div>
+                <div class="s"><b>12</b><span>荣誉勋章</span></div>
+            </div>
+            <div class="profile-section-title" style="padding:16px 22px 0;">账号</div>
+            <div id="accountCard" style="margin:10px 22px 0;">
+                <div id="acctLoggedOut">
+                    <button onclick="window.openAcctModal()" style="width:100%;height:46px;border:none;border-radius:23px;background:linear-gradient(135deg,#A78BFA,#8B6FE8);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 8px 18px rgba(139,92,246,.3);">登录账号</button>
+                    <div style="font-size:9px;color:#B0ADB8;text-align:center;margin-top:6px;">登录后云端同步</div>
+                </div>
+                <div id="acctLoggedIn" style="display:none;">
+                    <div style="font-size:14px;color:#161722;">已登录：<b id="acctEmailShown" style="color:var(--purple-strong);"></b></div>
+                    <div id="acctSyncState" style="font-size:12px;color:#8a8a93;margin:6px 0 10px;">已同步</div>
+                    <button onclick="window.acctLogout()" style="height:38px;padding:0 20px;border:1px solid #e6e6ec;border-radius:19px;background:#fff;color:#5b5b66;font-size:13px;cursor:pointer;">退出登录</button>
+                </div>
+            </div>
+            <div class="J2-cal">
+                <div class="h"><b>7月 2026</b><span>训练 5 天</span></div>
+                <div class="wd"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                <div class="g">
+                    <span class="d dim">29</span><span class="d dim">30</span><span class="d">1</span><span class="d tr">2</span><span class="d">3</span><span class="d">4</span><span class="d">5</span>
+                    <span class="d">6</span><span class="d">7</span><span class="d tr">8</span><span class="d">9</span><span class="d">10</span><span class="d">11</span><span class="d tr">12</span>
+                    <span class="d">13</span><span class="d">14</span><span class="d">15</span><span class="d">16</span><span class="d tr">17</span><span class="d">18</span><span class="d">19</span>
+                    <span class="d">20</span><span class="d">21</span><span class="d">22</span><span class="d">23</span><span class="d">24</span><span class="d today tr">25</span><span class="d">26</span>
+                    <span class="d">27</span><span class="d">28</span><span class="d">29</span><span class="d">30</span><span class="d">31</span><span class="d dim">1</span><span class="d dim">2</span>
+                </div>
+            </div>
+            <div class="profile-section-title wall-title" style="padding:16px 22px 0;">训练日志<span class="wall-count" id="wallCount">共 0 条</span></div>
+            <div class="J2-wall" id="logWall"></div>
         </div>
 
         <div id="pageContainer"></div>
