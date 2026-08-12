@@ -1621,6 +1621,9 @@ body {
         .J2-card .t{font-size:11px;line-height:1.45;color:#3A2E3B;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         /* 全屏日志详情 */
         .lgd-overlay{position:absolute;inset:0;z-index:300;background:#fff}
+        @media (min-width: 480px){
+          .lgd-overlay{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:430px;height:840px;max-height:92vh;border-radius:28px;overflow:hidden;box-shadow:0 28px 70px rgba(30,20,50,.35)}
+        }
         .lgd{height:100%;display:flex;flex-direction:column}
         .lgd-img{height:74%;background:linear-gradient(150deg,#FFE9FB,#E9D5FF);position:relative;overflow:hidden}
         .lgd-img .main{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
