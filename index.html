@@ -3064,24 +3064,19 @@ body {
           var wall = document.getElementById('logWall');
           var cnt = document.getElementById('wallCount');
           if (!wall) return;
-          var logs = STORE.get('logs', []);
-          var isMock = !logs || logs.length === 0;
-          if (isMock) logs = WALL_MOCK;
-          if (cnt) cnt.textContent = '共 ' + logs.length + ' 条';
+          var logs = STORE.get('logs', []) || [];
           var shown = logs.filter(function(g){ return !g.hidden; });
           if (cnt) cnt.textContent = '共 ' + shown.length + ' 条';
+          if (shown.length === 0){
+            wall.innerHTML = '<div class="J2-empty">还没有训练日志 · 去发布页记录第一条吧</div>';
+            return;
+          }
           wall.innerHTML = shown.map(function(g, i){
             var meta = MOOD_META[g.mood] || MOOD_DEFAULT;
             var title = (g.text || '记录了一次训练').split('\n')[0];
             var ph = (g.photos && g.photos.length) ? '<img src="' + g.photos[0] + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">' : meta.emoji;
             return '<div class="J2-card" onclick="window.openLogDetail(' + i + ')"><div class="pic" style="background:' + meta.grad + ';">' + ph + '</div><div class="bd"><div class="t">' + title + '</div></div></div>';
           }).join('');
-          if (isMock){
-            var hd = document.createElement('div');
-            hd.className = 'J2-empty';
-            hd.textContent = '以上为示例 · 发布训练日志后在此展示';
-            wall.appendChild(hd);
-          }
         };
         renderLogWall();
         // ── 全屏日志详情 ──
@@ -3096,10 +3091,8 @@ body {
         function fmtLogDate(t){ var d = new Date(t || Date.now()); return (d.getMonth()+1) + '月' + d.getDate() + '日 · 星期' + '日一二三四五六'[d.getDay()]; }
         function fmtLogTime(t){ var d = new Date(t || Date.now()); var p = function(n){ return n < 10 ? '0' + n : n; }; return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日 ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
         window.openLogDetail = function(i){
-          var logs = STORE.get('logs', []);
-          var isMock = !logs || logs.length === 0;
-          var arr = isMock ? WALL_MOCK : logs;
-          var g = arr[i]; if (!g) return;
+          var logs = STORE.get('logs', []) || [];
+          var g = logs[i]; if (!g) return;
           LGD.idx = i; LGD.logs = logs;
           var meta = MOOD_META[g.mood] || MOOD_DEFAULT;
           var svg = (LGD_META[g.mood] || {}).svg || LGD_DEFAULT;
@@ -3402,7 +3395,22 @@ body {
             setTimeout(function() { document.getElementById('pubLogOverlay').classList.add('show'); }, 300);
         };
         window.closePubLog = function() { document.getElementById('pubLogOverlay').classList.remove('show'); };
-        window.doPubPost = function() { window.closePubLog(); window.showToast('✅ 已发布到训练日志'); };
+        window.doPubPost = function() {
+            window.closePubLog();
+            var t = (document.getElementById('pvText') || {}).textContent || '';
+            var t2 = (document.getElementById('pubText') || {}).value || '';
+            var text = (t || t2 || '记录了一次训练').trim();
+            var moodEl = document.querySelector('#publishPage .chip.on');
+            var mood = moodEl ? moodEl.textContent.trim() : '';
+            var kcal = (document.getElementById('kcalNum') || {}).textContent || '';
+            var acts = '';
+            try { acts = (typeof tdCompleted !== 'undefined' && tdCompleted) ? tdCompleted.length + ' 个' : ''; } catch(e){}
+            var logs = STORE.get('logs', []);
+            logs.unshift({ id: Date.now(), text: text, mood: mood, kcal: kcal, acts: acts, dur: '', time: Date.now(), photos: (typeof pubPhotos !== 'undefined' ? pubPhotos.slice() : []) });
+            STORE.set('logs', logs.slice(0, 300));
+            window.showToast('✅ 已发布到训练日志');
+            if (typeof renderLogWall === 'function') renderLogWall();
+          };
 
         // ── 添加运动弹窗交互 ──
         var _modalTab = 0; // 0=无氧, 1=有氧
