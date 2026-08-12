@@ -1639,11 +1639,15 @@ body {
         .pf-cal .d.tr{color:#E86FB9;font-weight:700}
         .pf-cal .d.today{background:#FFB6F6;color:#fff;font-weight:800}
         /* V1 一体模块：头像+统计+月历 */
-        .hmod{margin:14px 22px 0;border-radius:24px;padding:16px;background:linear-gradient(170deg,#FDF4FB 0%,#F6F1FF 100%);border:1px solid rgba(255,255,255,.9);box-shadow:0 10px 28px rgba(120,90,180,.12)}
-        .hmod .hd{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px dashed rgba(167,139,250,.25);margin-bottom:14px}
+        .hmod{margin:14px 22px 0;border-radius:24px;padding:16px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 24px rgba(31,38,135,.08)}
+        .hmod .hd{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid rgba(28,28,30,.06);margin-bottom:14px}
+        .hmod .hd-info{flex:1;min-width:0}
         .hmod .av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,#FFB6F6,#A78BFA);display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;border:3px solid #fff;box-shadow:0 8px 20px rgba(167,139,250,.35);flex-shrink:0}
         .hmod .nm{font-size:16px;font-weight:800;color:#3A2E3B}
         .hmod .lv{font-size:10px;color:#8E8E93;margin-top:2px}
+        .hmod .hd-right{flex-shrink:0;display:flex;align-items:center}
+        .hmod .hd-login{height:34px;padding:0 18px;border:none;border-radius:17px;background:linear-gradient(135deg,#A78BFA,#8B6FE8);color:#fff;font-size:11px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(139,92,246,.3)}
+        .hmod .hd-sync{font-size:10px;color:#4E7A00;font-weight:700;background:rgba(183,255,42,.2);padding:4px 12px;border-radius:999px}
         .hmod .bd{display:flex;gap:10px}
         .hmod .stats{display:flex;flex-direction:column;gap:9px;width:36%}
         .hmod .stat{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);border-radius:14px;padding:9px 10px;box-shadow:0 4px 14px rgba(120,90,180,.08);display:flex;align-items:center;gap:9px;flex:1}
@@ -1885,9 +1889,13 @@ body {
             <div class="hmod">
                 <div class="hd">
                     <div class="av">🏃</div>
-                    <div>
+                    <div class="hd-info">
                         <div class="nm">GO RUN</div>
                         <div class="lv">等级 Lv.5 · 加入 2026-07-01</div>
+                    </div>
+                    <div class="hd-right">
+                        <button id="hdLoginBtn" onclick="window.openAcctModal()" class="hd-login" style="display:none;">登录</button>
+                        <span id="hdSync" class="hd-sync" style="display:none;">已同步 ✓</span>
                     </div>
                 </div>
                 <div class="bd">
@@ -3357,6 +3365,10 @@ body {
     var em = document.getElementById('userMenuEmail');
     if (ic) ic.setAttribute('stroke', session ? '#A78BFA' : '#3A2E3B');
     if (em && session) em.textContent = session.email;
+    var hb = document.getElementById('hdLoginBtn');
+    var hs = document.getElementById('hdSync');
+    if (hb) hb.style.display = session ? 'none' : '';
+    if (hs) hs.style.display = session ? '' : 'none';
   }
   window.toggleUserMenu = function(){
     var m = document.getElementById('userMenu');
