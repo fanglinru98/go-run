@@ -2251,6 +2251,31 @@ body {
 </div>
 
 <!-- ===== JavaScript 按顺序加载 ===== -->
+<!-- ===== 训练日志全屏详情 ===== -->
+<div class="lgd-overlay" id="lgdOverlay" style="display:none;">
+  <div class="lgd">
+    <div class="lgd-img" id="lgdImg">
+      <div class="main" id="lgdMain"></div>
+      <span class="lgd-cnt" id="lgdCnt"></span>
+      <div class="lgd-topbar"><button class="lgd-back" onclick="window.closeLogDetail()">←</button></div>
+      <button class="lgd-menu-btn" id="lgdMenuBtn" onclick="event.stopPropagation();document.getElementById('lgdPop').classList.toggle('show')">⋯</button>
+      <div class="lgd-pop" id="lgdPop">
+        <button data-act="edit">✎ 编辑</button>
+        <button data-act="pin">📌 置顶</button>
+        <button data-act="hide">👁 隐藏</button>
+        <button data-act="del" class="del">🗑 删除</button>
+      </div>
+    </div>
+    <div class="lgd-bd">
+      <div class="lgd-date" id="lgdDate"></div>
+      <h2 id="lgdTitle"></h2>
+      <span class="lgd-tag" id="lgdTag"></span>
+      <div class="lgd-tx" id="lgdTx"></div>
+      <div class="lgd-data" id="lgdData"></div>
+      <div class="lgd-foot"><span id="lgdTime"></span></div>
+    </div>
+  </div>
+</div>
 <script src="js/data.js"></script>
 <script src="js/modules/publish.js"></script>
 <script src="js/modules/health.js"></script>
@@ -3691,30 +3716,5 @@ body {
   </div>
 </div>
 
-<!-- ===== 训练日志全屏详情 ===== -->
-<div class="lgd-overlay" id="lgdOverlay" style="display:none;">
-  <div class="lgd">
-    <div class="lgd-img" id="lgdImg">
-      <div class="main" id="lgdMain"></div>
-      <span class="lgd-cnt" id="lgdCnt"></span>
-      <div class="lgd-topbar"><button class="lgd-back" onclick="window.closeLogDetail()">←</button></div>
-      <button class="lgd-menu-btn" id="lgdMenuBtn" onclick="event.stopPropagation();document.getElementById('lgdPop').classList.toggle('show')">⋯</button>
-      <div class="lgd-pop" id="lgdPop">
-        <button data-act="edit">✎ 编辑</button>
-        <button data-act="pin">📌 置顶</button>
-        <button data-act="hide">👁 隐藏</button>
-        <button data-act="del" class="del">🗑 删除</button>
-      </div>
-    </div>
-    <div class="lgd-bd">
-      <div class="lgd-date" id="lgdDate"></div>
-      <h2 id="lgdTitle"></h2>
-      <span class="lgd-tag" id="lgdTag"></span>
-      <div class="lgd-tx" id="lgdTx"></div>
-      <div class="lgd-data" id="lgdData"></div>
-      <div class="lgd-foot"><span id="lgdTime"></span></div>
-    </div>
-  </div>
-</div>
 </body>
 </html>
