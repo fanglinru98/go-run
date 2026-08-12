@@ -3159,7 +3159,7 @@ body {
           // 网页端鼠标拖动
           var mx = 0, mdown = false;
           el.addEventListener('mousedown', function(e){ mx = e.clientX; mdown = true; });
-          el.addEventListener('mouseup', function(e){
+          document.addEventListener('mouseup', function(e){
             if (!mdown) return; mdown = false;
             var dx = e.clientX - mx;
             if (LGD.photos && LGD.photos.length > 1 && Math.abs(dx) > 40){
