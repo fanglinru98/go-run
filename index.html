@@ -1352,6 +1352,8 @@ body {
 #followPage .c-sub{font-size:11px;color:var(--text-2);margin-top:3px;display:flex;gap:8px;}
 #followPage .c-acts{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
 #followPage .mini-btn{border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
+        .mini-btn:active{transform:scale(.9);opacity:.85}
+        .mini-go:active{transform:scale(.9)!important;opacity:.9}
 #followPage .mini-detail{background:var(--purple-soft);color:var(--purple-deep);}
 #followPage .mini-detail:active{background:var(--purple-tint);transform:scale(.93);}
 #followPage .mini-go{background:var(--purple);color:#fff;}
@@ -3346,7 +3348,7 @@ body {
                     '<div class="c-sub"><span>' + c.hot + '</span><span>' + c.dur + '</span></div></div>' +
                     '<div class="c-acts">' +
                     '<button class="mini-btn mini-detail" onclick="event.stopPropagation();window.openDetail(' + courses.indexOf(c) + ')">详情</button>' +
-                    '<button class="mini-btn mini-go" onclick="event.stopPropagation();window.showToast(\'开始跟练：\' + c.name + \'\')">跟练</button>' +
+                    '<button class="mini-btn mini-go" onclick="event.stopPropagation();window.openVideoPlayer(c.bv, c.name)">跟练</button>' +
                     '</div>';
                 el.addEventListener('click', function(){ window.showToast(c.name); });
                 list.appendChild(el);
