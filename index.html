@@ -1787,19 +1787,8 @@ body {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#9A9AA3" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="#9A9AA3" stroke-width="2" stroke-linecap="round"/></svg>
                     <input id="courseSearch" placeholder="搜索课程 / 部位 / 教练" oninput="window.searchCourses(this.value)">
                 </div>
-                <div class="sec-title">今日推荐 <span class="more" onclick="window.showToast('根据你的训练偏好推荐')">换一批</span></div>
-                <div class="reco-grid">
-                    <div class="reco-card" onclick="window.openDetail(0)">
-                        <div class="reco-cover" style="background-image:url('img/cover/1.jpg');background-size:cover;background-position:center;"><div class="reco-play" onclick="event.stopPropagation();window.openVideoPlayer('BV1rt4y1k7Wq','帕梅拉｜10分钟下腹部训练')"></div><span class="reco-dur">10:00</span></div>
-                        <div class="reco-name">帕梅拉｜10分钟下腹部训练</div>
-                        <div class="reco-meta">中等 · 3714万</div>
-                    </div>
-                    <div class="reco-card" onclick="window.openDetail(1)">
-                        <div class="reco-cover" style="background-image:url('img/cover/2.jpg');background-size:cover;background-position:center;"><div class="reco-play" onclick="event.stopPropagation();window.openVideoPlayer('BV1Yx411v7Z1','周六野｜10分钟超燃脂HIIT')"></div><span class="reco-dur">13:00</span></div>
-                        <div class="reco-name">周六野｜10分钟超燃脂HIIT</div>
-                        <div class="reco-meta">高强度 · 85万</div>
-                    </div>
-                </div>
+                <div class="sec-title">今日推荐 <span class="more" onclick="window.followRecoRefresh()">换一批</span></div>
+                <div class="reco-grid" id="followReco"></div>
                 <div class="tab-switch" id="courseTab">
                     <div class="on" data-t="reco">推荐</div>
                     <div data-t="fav">我的收藏</div>
@@ -1921,7 +1910,8 @@ body {
         <div id="profilePage">
             <div class="hmod">
                 <div class="hd">
-                    <div class="av">🏃</div>
+                    <div class="av" onclick="window.pickAvatar()" id="profileAv">🏃</div>
+                    <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="window.applyAvatar(this)">
                     <div class="hd-info">
                         <div class="nm">GO RUN</div>
                         <div class="lv">等级 Lv.5 · 加入 2026-07-01</div>
@@ -2198,21 +2188,7 @@ body {
         </div>
     </div>
 
-    <!-- ===== 换装弹窗 ===== -->
-    <div class="dress-modal" id="dressModal">
-        <div class="panel">
-            <h4>👗 换装</h4>
-            <div class="options">
-                <button class="opt active" onclick="window.changeOutfit('🧑‍🦰')">👨 经典</button>
-                <button class="opt" onclick="window.changeOutfit('🧑‍🎤')">🎤 潮流</button>
-                <button class="opt" onclick="window.changeOutfit('🧑‍🚀')">🚀 太空</button>
-                <button class="opt" onclick="window.changeOutfit('🧑‍🏫')">📚 学院</button>
-                <button class="opt" onclick="window.changeOutfit('🧑‍🍳')">🍳 厨师</button>
-                <button class="opt" onclick="window.changeOutfit('🧑‍💻')">💻 极客</button>
-            </div>
-            <button class="close-btn" onclick="window.closeDressModal()">✕ 关闭</button>
-        </div>
-    </div>
+    
 
     <!-- ===== 设置菜单（icon 旁浮层） ===== -->
     <div class="pop-menu" id="popMenu">
@@ -2806,6 +2782,7 @@ body {
                 document.getElementById('pageContainer').classList.add('hidden');
                 document.getElementById('followPage').classList.add('active');
                 if (typeof renderRecent === 'function') renderRecent();
+                if (typeof renderFollowReco === 'function') renderFollowReco();
                 return;
             }
             if (tab === 'health') {
@@ -2961,7 +2938,17 @@ body {
             row.innerHTML = html;
         };
         window.clickSlot = function(){
-            document.getElementById('pubPhotoInput').click();
+            var sh = document.getElementById('photoSheet');
+            if (sh) sh.style.display = 'flex';
+        };
+        window.pickPhotoSource = function(type){
+            var sh = document.getElementById('photoSheet');
+            if (sh) sh.style.display = 'none';
+            var input = document.getElementById('pubPhotoInput');
+            if (!input) return;
+            if (type === 'camera') input.setAttribute('capture', 'environment');
+            else input.removeAttribute('capture');
+            input.click();
         };
         window.pickPhoto = function(input){
             var file = input.files && input.files[0];
@@ -2995,6 +2982,11 @@ body {
             window.showToast('已移除照片');
         };
         renderPhotoSlots();
+        (function(){
+          document.querySelectorAll('#advSheet input, #advSheet select').forEach(function(inp){
+            inp.addEventListener('focus', function(){ try { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e){ inp.scrollIntoView(); } });
+          });
+        })();
         window.autoFillAdv = function(){
             // 今日页消耗
             var kcal = document.getElementById('kcalNum');
@@ -3292,6 +3284,19 @@ body {
             }
         });
 
+        // ── 今日推荐（随机） + 换一批 ──
+        function renderFollowReco(){
+          var g = document.getElementById('followReco'); if (!g) return;
+          var pool = courses.slice();
+          for (var i = pool.length - 1; i > 0; i--){ var jj = Math.floor(Math.random() * (i + 1)); var t = pool[i]; pool[i] = pool[jj]; pool[jj] = t; }
+          var picks = pool.slice(0, 2);
+          g.innerHTML = picks.map(function(c){
+            var cover = c.pic ? 'background-image:url(' + c.pic + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#FFE9FB,#FFB6F6);';
+            return '<div class="reco-card" onclick="window.openDetail(' + courses.indexOf(c) + ')"><div class="reco-cover" style="' + cover + '"><div class="reco-play" onclick="event.stopPropagation();window.openVideoPlayer(\'' + c.bv + '\',\'' + c.name + '\')"></div><span class="reco-dur">' + c.dur + '</span></div><div class="reco-name">' + c.name + '</div><div class="reco-meta">' + c.level + ' · ' + c.hot + '</div></div>';
+          }).join('');
+        }
+        window.followRecoRefresh = function(){ renderFollowReco(); window.showToast('已换一批'); };
+
         // ── 最近跟练（真实播放记录） ──
         function fmtRecent(t){
           var s = Math.floor((Date.now() - t) / 1000);
@@ -3324,6 +3329,33 @@ body {
             renderRecent();
           } catch(e){}
         }
+
+        // ── 头像更换 ──
+        window.pickAvatar = function(){ var inp = document.getElementById('avatarInput'); if (inp) inp.click(); };
+        window.applyAvatar = function(input){
+          var file = input.files && input.files[0]; if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function(){
+            var img = new Image();
+            img.onload = function(){
+              var cv = document.createElement('canvas');
+              cv.width = 160; cv.height = 160;
+              cv.getContext('2d').drawImage(img, 0, 0, 160, 160);
+              var url = cv.toDataURL('image/jpeg', 0.85);
+              try { localStorage.setItem('gorun_avatar', url); } catch(e){}
+              document.querySelectorAll('.av').forEach(function(a){ a.style.backgroundImage = 'url(' + url + ')'; a.style.backgroundSize = 'cover'; a.style.backgroundPosition = 'center'; a.textContent = ''; });
+              window.showToast('头像已更新');
+            };
+            img.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+          input.value = '';
+        };
+        (function(){
+          var av = '';
+          try { av = localStorage.getItem('gorun_avatar') || ''; } catch(e){}
+          if (av) document.querySelectorAll('.av').forEach(function(a){ a.style.backgroundImage = 'url(' + av + ')'; a.style.backgroundSize = 'cover'; a.style.backgroundPosition = 'center'; a.textContent = ''; });
+        })();
 
         // ── 视频全屏播放 ──
         window.openVideoPlayer = function(bvid, title) {
@@ -3825,7 +3857,9 @@ body {
   window.acctLogout = function(){
     session = null;
     try { localStorage.removeItem('gorun_session'); } catch(e){}
+    try { localStorage.removeItem('gorun_logs'); } catch(e){}   // 日志属于账号，退出即清
     renderAcct();
+    if (typeof renderLogWall === 'function') renderLogWall();
   };
 
   window.__syncPush = schedulePush;
@@ -3874,5 +3908,14 @@ body {
   </div>
 </div>
 
+
+<!-- ===== 照片来源选择（拍照/相册） ===== -->
+<div id="photoSheet" style="position:fixed;left:0;right:0;bottom:0;z-index:400;display:none;flex-direction:column;background:rgba(20,16,32,.45);" onclick="if(event.target===this)window.pickPhotoSource('album')">
+  <div style="margin:0 10px 10px;background:#fff;border-radius:18px;overflow:hidden;">
+    <button onclick="window.pickPhotoSource('camera')" style="width:100%;height:52px;border:none;background:#fff;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;border-bottom:1px solid rgba(28,28,30,.06);font-family:inherit;">📷 拍照</button>
+    <button onclick="window.pickPhotoSource('album')" style="width:100%;height:52px;border:none;background:#fff;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;">🖼 相册</button>
+  </div>
+  <button onclick="document.getElementById('photoSheet').style.display='none'" style="margin:0 10px 16px;height:48px;border:none;border-radius:18px;background:#fff;font-size:15px;font-weight:600;color:#8E8E93;cursor:pointer;font-family:inherit;">取消</button>
+</div>
 </body>
 </html>
