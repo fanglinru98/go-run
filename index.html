@@ -554,6 +554,7 @@ body {
 .vfp-title { color:#fff; font-size:13px; font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .vfp-wrap { flex:1; position:relative; }
 .vfp-wrap iframe { position:absolute; inset:0; width:100%; height:100%; border:none; }
+        .vfp-tip{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-size:10px;color:rgba(255,255,255,.45);z-index:5;pointer-events:none}
 
 /* ripple (follow page buttons only) */
 .btn-outline, .btn-green, .btn-add { position:relative; overflow:hidden; -webkit-tap-highlight-color:transparent; outline:none; }
@@ -2079,7 +2080,7 @@ body {
             <button class="vfp-back" onclick="window.closeVideoPlayer()">←</button>
             <div class="vfp-title" id="vfpTitle"></div>
         </div>
-        <div class="vfp-wrap"><iframe id="vfpVideo" src="" allowfullscreen allow="autoplay"></iframe></div>
+        <div class="vfp-wrap"><span class="vfp-tip" id="vfpTip"></span><iframe id="vfpVideo" src="" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe></div>
     </div>
 
     <!-- ===== 课程详情底部抽屉 ===== -->
@@ -3297,6 +3298,8 @@ body {
             document.getElementById('vfpTitle').textContent = title;
             document.getElementById('vfpVideo').src = '//player.bilibili.com/player.html?bvid=' + bvid + '&page=1&high_quality=1&autoplay=1&danmaku=0';
             document.getElementById('videoFullPlayer').classList.add('show');
+            var tip = document.getElementById('vfpTip');
+            if (tip) tip.textContent = '点击播放器右下角 ⛶ 可全屏观看（横屏更佳）';
         };
         window.closeVideoPlayer = function() {
             document.getElementById('videoFullPlayer').classList.remove('show');
