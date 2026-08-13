@@ -17,6 +17,11 @@
     <title>GO RUN</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
+/* B 站搜索 */
+.bili-title{display:flex;align-items:center;justify-content:space-between;padding:14px 2px 8px;font-size:14px;font-weight:700;color:var(--text-1);}
+.bili-title em{font-style:normal;font-size:11px;font-weight:500;color:var(--primary,#A78BFA);}
+.bili-item .c-name{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+.bili-item .mini-go{pointer-events:none;background:linear-gradient(135deg,#A78BFA,#8B6FE8);color:#fff;}
 :root{
   --purple:#A78BFA; --purple-deep:#9370DB; --purple-strong:#8B6FE8; --purple-soft:#EDE5FC; --purple-tint:#C9B8F5;
   --pink:#FFB6F6; --pink-soft:#FFE9FB;
@@ -1801,6 +1806,7 @@ body {
                     <div class="chip" data-c="legs">臀腿</div>
                     <div class="chip" data-c="hiit">HIIT</div>
                 </div>
+                <div id="biliResults" style="display:none"></div>
                 <div id="courseList"></div>
                 <div class="card" id="emptyState" style="display:none;padding:30px;text-align:center;color:var(--text-3);margin-top:12px;">
                     <div style="font-size:30px;margin-bottom:8px;"></div>
@@ -3431,7 +3437,51 @@ body {
                 list.appendChild(el);
             });
         };
-        window.searchCourses = function(kw){ window._followKw = kw; window.renderCourses(); };
+        window.searchCourses = function(kw){
+            window._followKw = kw;
+            window.renderCourses();
+            window.biliSearch(kw);
+        };
+        var BILI_WORKER = ''; // Cloudflare Worker URL，如 https://xxx.workers.dev
+        var _biliTimer = null;
+        window.biliSearch = function(kw){
+            var box = document.getElementById('biliResults');
+            if (!box) return;
+            kw = (kw || '').trim();
+            if (!kw || !BILI_WORKER){
+                box.style.display = 'none';
+                box.innerHTML = '';
+                return;
+            }
+            clearTimeout(_biliTimer);
+            _biliTimer = setTimeout(function(){
+                box.innerHTML = '<div class="bili-title"><span>B 站全网</span><em>搜索中…</em></div>';
+                box.style.display = 'block';
+                fetch(BILI_WORKER + '/search?keyword=' + encodeURIComponent(kw), { signal: AbortSignal.timeout(8000) })
+                    .then(function(r){ return r.json(); })
+                    .then(function(j){
+                        var list = j && j.list ? j.list : [];
+                        if (!list.length){
+                            box.innerHTML = '<div class="bili-title"><span>B 站全网</span><em>未找到相关视频</em></div>';
+                            return;
+                        }
+                        var rows = list.map(function(v){
+                            var dur = v.duration ? Math.floor(v.duration / 60) + ':' + String(v.duration % 60).padStart(2, '0') : '';
+                            var pic = v.pic ? 'background-image:url(' + v.pic + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#C9B8F5,#E86FB9);';
+                            return '<div class="course-item bili-item" onclick="window.openVideoPlayer(\'' + v.bvid + '\',\'' + v.title.replace(/'/g, '') + '\')">' +
+                                '<div class="c-thumb" style="' + pic + '"><div class="mini-play"></div><span class="dur">' + dur + '</span></div>' +
+                                '<div class="c-info"><div class="c-name">' + v.title + '</div>' +
+                                '<div class="c-sub"><span>' + v.author + '</span><span>' + (v.play > 9999 ? (v.play / 10000).toFixed(1) + '万' : v.play) + ' 播放</span></div></div>' +
+                                '<div class="c-acts"><button class="mini-btn mini-go" style="pointer-events:none">播放</button></div>' +
+                            '</div>';
+                        }).join('');
+                        box.innerHTML = '<div class="bili-title"><span>B 站全网 · 搜到 ' + list.length + ' 条</span><em onclick="window.biliSearch(\'' + kw.replace(/'/g, '') + '\')">换一批</em></div>' + rows;
+                    })
+                    .catch(function(){
+                        box.innerHTML = '<div class="bili-title"><span>B 站全网</span><em style="color:#9A9AA3">搜索暂不可用</em></div>';
+                    });
+            }, 400);
+        };
         var detailIdx = -1;
         window.openDetail = function(i){
             if (i < 0 || i >= courses.length) return;
