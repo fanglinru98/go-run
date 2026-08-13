@@ -1911,7 +1911,7 @@ body {
                     <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="window.applyAvatar(this)">
                     <div class="hd-info">
                         <div class="nm">GO RUN</div>
-                        <div class="lv">等级 Lv.5 · 加入 2026-07-01</div>
+                        <div class="lv" id="hmodLv">等级 Lv.5 · 加入 2026-07-01</div>
                     </div>
                     <div class="hd-right">
                         <button id="hdLoginBtn" onclick="window.openAcctModal()" class="hd-login" style="display:none;">登录</button>
@@ -3100,6 +3100,12 @@ body {
           var wall = document.getElementById('logWall');
           var cnt = document.getElementById('wallCount');
           if (!wall) return;
+          var loggedIn = (typeof window.__isLoggedIn === 'function') ? window.__isLoggedIn() : false;
+          if (!loggedIn){
+            if (cnt) cnt.textContent = '共 0 条';
+            wall.innerHTML = '<div class="J2-empty">登录后可查看训练日志</div>';
+            return;
+          }
           var logs = STORE.get('logs', []) || [];
           var shown = logs.filter(function(g){ return !g.hidden; });
           if (cnt) cnt.textContent = '共 ' + shown.length + ' 条';
@@ -3701,6 +3707,7 @@ body {
     });
   }
 
+  window.__isLoggedIn = function(){ return !!session; };
   function renderAcct(){
     var ic = document.getElementById('userIcon');
     var em = document.getElementById('userMenuEmail');
@@ -3710,6 +3717,9 @@ body {
     var hs = document.getElementById('hdSync');
     if (hb) hb.style.display = session ? 'none' : '';
     if (hs) hs.style.display = session ? '' : 'none';
+    var hl = document.getElementById('hmodLv');
+    if (hl) hl.textContent = session ? '等级 Lv.5 · 加入 2026-07-01' : '未登录 · 登录后查看你的数据';
+    if (typeof renderLogWall === 'function') renderLogWall();
   }
   window.toggleUserMenu = function(){
     var m = document.getElementById('userMenu');
@@ -3909,8 +3919,8 @@ body {
 <!-- ===== 照片来源选择（拍照/相册） ===== -->
 <div id="photoSheet" style="position:fixed;left:0;right:0;bottom:0;z-index:400;display:none;flex-direction:column;background:rgba(20,16,32,.45);" onclick="if(event.target===this)window.pickPhotoSource('album')">
   <div style="margin:0 10px 10px;background:#fff;border-radius:18px;overflow:hidden;">
-    <button onclick="window.pickPhotoSource('camera')" style="width:100%;height:52px;border:none;background:#fff;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;border-bottom:1px solid rgba(28,28,30,.06);font-family:inherit;">📷 拍照</button>
-    <button onclick="window.pickPhotoSource('album')" style="width:100%;height:52px;border:none;background:#fff;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;">🖼 相册</button>
+    <button onclick="window.pickPhotoSource('camera')" style="width:100%;height:52px;border:none;background:#fff;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;border-bottom:1px solid rgba(28,28,30,.06);font-family:inherit;">拍照</button>
+    <button onclick="window.pickPhotoSource('album')" style="width:100%;height:52px;border:none;background:#fff;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;">相册</button>
   </div>
   <button onclick="document.getElementById('photoSheet').style.display='none'" style="margin:0 10px 16px;height:48px;border:none;border-radius:18px;background:#fff;font-size:15px;font-weight:600;color:#8E8E93;cursor:pointer;font-family:inherit;">取消</button>
 </div>
