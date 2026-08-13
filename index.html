@@ -1650,6 +1650,7 @@ body {
         .lgd-data i{font-style:normal;font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;background:rgba(167,139,250,.09);color:#8B6FE8}
         .lgd-foot{display:flex;align-items:center;justify-content:space-between;margin-top:11px;padding-top:9px;border-top:1px solid rgba(28,28,30,.06);font-size:11px;color:var(--text-3)}
         .J2-empty{height:64px;border:1.5px dashed rgba(167,139,250,.35);border-radius:12px;margin:2px 22px 10px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-3)}
+        .recent-empty{background:rgba(255,255,255,.55);border:1px dashed rgba(167,139,250,.35);border-radius:16px;padding:26px 16px;text-align:center;font-size:12px;color:var(--text-3)}
         /* F 分栏：左统计卡 + 右紧凑月历 */
         .pf-split{display:flex;gap:10px;margin:10px 22px 0;align-items:stretch}
         .pf-left{display:flex;flex-direction:column;gap:10px;width:32%}
@@ -1812,11 +1813,7 @@ body {
                     <div style="font-size:11px;margin-top:4px;">换个关键词或分类试试</div>
                 </div>
                 <div class="sec-title">最近跟练 <span class="more">查看全部</span></div>
-                <div class="recent-row">
-                    <div class="recent-card" onclick="window.showToast('播放记录')"><div class="rc-cover" style="background:linear-gradient(135deg,#FFE9FB,#FFB6F6);"></div><div class="rc-name">蜜桃臀训练</div><div class="rc-sub">昨天 · 10分钟</div></div>
-                    <div class="recent-card" onclick="window.showToast('播放记录')"><div class="rc-cover" style="background:linear-gradient(135deg,#EDE5FC,#C9B8F5);"></div><div class="rc-name">全身燃脂 HIIT</div><div class="rc-sub">周三 · 20分钟</div></div>
-                    <div class="recent-card" onclick="window.showToast('播放记录')"><div class="rc-cover" style="background:linear-gradient(135deg,#C9F9FE,#2A9CFF);"></div><div class="rc-name">核心力量进阶</div><div class="rc-sub">周一 · 25分钟</div></div>
-                </div>
+                <div class="recent-row" id="recentRow"></div>
             </div>
         </div>
 
@@ -2762,6 +2759,7 @@ body {
             if (tab === 'follow') {
                 document.getElementById('pageContainer').classList.add('hidden');
                 document.getElementById('followPage').classList.add('active');
+                if (typeof renderRecent === 'function') renderRecent();
                 return;
             }
             if (tab === 'health') {
@@ -3248,8 +3246,42 @@ body {
             }
         });
 
+        // ── 最近跟练（真实播放记录） ──
+        function fmtRecent(t){
+          var s = Math.floor((Date.now() - t) / 1000);
+          if (s < 60) return '刚刚';
+          if (s < 3600) return Math.floor(s / 60) + ' 分钟前';
+          if (s < 86400) return Math.floor(s / 3600) + ' 小时前';
+          var d = new Date(t);
+          return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+        }
+        function renderRecent(){
+          var row = document.getElementById('recentRow'); if (!row) return;
+          var recs = STORE.get('recent', []) || [];
+          if (!recs.length){
+            row.innerHTML = '<div class="recent-empty">还没有跟练记录 · 去上面选个课程开始吧</div>';
+            return;
+          }
+          row.innerHTML = recs.map(function(r){
+            var cover = r.pic ? 'background-image:url(' + r.pic + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#FFE9FB,#FFB6F6);';
+            return '<div class="recent-card" onclick="window.openVideoPlayer(\'' + r.bvid + '\',\'' + r.title + '\')"><div class="rc-cover" style="' + cover + '"></div><div class="rc-name">' + r.title + '</div><div class="rc-sub">' + fmtRecent(r.time) + '</div></div>';
+          }).join('');
+        }
+        function recRecent(bvid, title){
+          try {
+            var c = (typeof courses !== 'undefined' ? courses : []).filter(function(x){ return x.bv === bvid; })[0];
+            var pic = c ? c.pic : '';
+            var recs = STORE.get('recent', []) || [];
+            recs = recs.filter(function(r){ return r.bvid !== bvid; });
+            recs.unshift({ bvid: bvid, title: title, pic: pic, time: Date.now() });
+            STORE.set('recent', recs.slice(0, 10));
+            renderRecent();
+          } catch(e){}
+        }
+
         // ── 视频全屏播放 ──
         window.openVideoPlayer = function(bvid, title) {
+            recRecent(bvid, title);
             document.getElementById('vfpTitle').textContent = title;
             document.getElementById('vfpVideo').src = '//player.bilibili.com/player.html?bvid=' + bvid + '&page=1&high_quality=1&autoplay=1&danmaku=0';
             document.getElementById('videoFullPlayer').classList.add('show');
