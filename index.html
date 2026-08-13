@@ -2699,25 +2699,46 @@ body {
   tdRenderCal();
   tdRenderList();
   tdUpdateProgress();
-  // 滚动到今天并居中（多时机执行，确保布局稳定后对齐）
+  // 滚动到今天并居中（持续校准：每 150ms 校验一次直到稳定居中，消除布局竞争）
   function centerToday(){
     var r = document.getElementById('tdCalRow');
     var strip = r ? r.parentElement : null;   // .cal-strip（overflow-x:auto 的滚动容器）
     var sel = r ? r.querySelector('.cal-cell.sel') : null;
-    if (strip && sel){
-      var sr = strip.getBoundingClientRect();
-      var el = sel.getBoundingClientRect();
-      strip.scrollLeft = Math.max(0, (el.left - sr.left) + el.width / 2 - sr.width / 2);
-    }
+    if (!strip || !sel) return;
+    var sr = strip.getBoundingClientRect();
+    var el = sel.getBoundingClientRect();
+    if (sr.width === 0 || el.width === 0) return;   // 布局未就绪，等下一轮
+    var target = Math.max(0, (el.left - sr.left) + el.width / 2 - sr.width / 2);
+    if (Math.abs(strip.scrollLeft - target) > 2) strip.scrollLeft = target;
   }
-  requestAnimationFrame(centerToday);
-  setTimeout(centerToday, 150);
-  window.addEventListener('load', centerToday);
+  (function(){
+    // 固定时长强制校准：8 秒内每 300ms 强制居中一次（不依赖稳定判断，覆盖所有异步布局时序）
+    var _n = 0;
+    function force(){
+      centerToday();
+      _n++;
+      if (_n < 27) setTimeout(force, 300);   // 8.1s 持续强制
+    }
+    function kick(){ _n = 0; force(); }
+    setTimeout(kick, 120);
+    document.addEventListener('DOMContentLoaded', kick);
+    window.addEventListener('load', kick);
+    window.addEventListener('resize', centerToday);
+    // 内容重渲染（如云端同步拉取后）自动重新居中
+    try {
+      var obsRow = document.getElementById('tdCalRow');
+      if (obsRow && typeof MutationObserver !== 'undefined'){
+        var obs = new MutationObserver(function(){ setTimeout(centerToday, 30); });
+        obs.observe(obsRow, { childList: true, subtree: true });
+      }
+    } catch(e){}
+  })();
 
         // ═══════════════════════════════════════
         //  Tab Switching
         // ═══════════════════════════════════════
         function showToday() {
+            if (typeof centerToday === 'function') setTimeout(centerToday, 60);
             document.getElementById('pageContainer').classList.add('hidden');
             document.getElementById('followPage').classList.remove('active');
             document.getElementById('healthPage').classList.remove('active');
