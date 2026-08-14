@@ -22,6 +22,26 @@
 .bili-title em{font-style:normal;font-size:11px;font-weight:500;color:var(--primary,#A78BFA);}
 .bili-item .c-name{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
 .bili-item .mini-go{pointer-events:none;background:linear-gradient(135deg,#A78BFA,#8B6FE8);color:#fff;}
+<style>
+/* 搜索结果页 */
+#searchPage .sp-head{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #F0F0F3;flex-shrink:0;}
+#searchPage .sp-back{width:34px;height:34px;border-radius:50%;background:#F2F1F7;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;color:#3A2E3B;cursor:pointer;padding-bottom:3px;}
+#searchPage .sp-title{font-size:15px;font-weight:700;color:#3A2E3B;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#searchPage .sp-head-right{width:34px;}
+#searchPage .sp-body{flex:1;overflow-y:auto;padding:6px 16px 44px;}
+#searchPage .sp-sec{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:#3A2E3B;margin:16px 0 10px;}
+#searchPage .sp-sec span{font-size:11px;color:#A78BFA;font-weight:500;}
+#searchPage .sp-card{display:flex;align-items:center;gap:12px;padding:12px;background:#fff;border-radius:16px;margin-bottom:10px;cursor:pointer;transition:all .22s;box-shadow:0 2px 10px rgba(120,100,180,.07);}
+#searchPage .sp-card:active{transform:scale(.985);}
+#searchPage .sp-thumb{width:64px;height:64px;border-radius:14px;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#searchPage .sp-thumb .mini-play{width:0;height:0;border-style:solid;border-width:7px 0 7px 11px;border-color:transparent transparent transparent rgba(255,255,255,.92);filter:drop-shadow(0 1px 3px rgba(0,0,0,.25));}
+#searchPage .sp-thumb .dur{position:absolute;right:4px;bottom:4px;background:rgba(0,0,0,.55);color:#fff;font-size:9px;padding:1px 5px;border-radius:6px;}
+#searchPage .sp-info{flex:1;min-width:0;}
+#searchPage .sp-name{font-size:14px;font-weight:700;color:#3A2E3B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#searchPage .sp-sub{font-size:11px;color:#9A9AA3;margin-top:4px;display:flex;gap:8px;}
+#searchPage .sp-go{flex-shrink:0;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#A78BFA,#8B6FE8);color:#fff;pointer-events:none;}
+#searchPage .sp-empty{padding:26px 10px;text-align:center;color:#9A9AA3;font-size:12px;background:#fff;border-radius:14px;}
+#searchPage .sp-loading{padding:26px 10px;text-align:center;color:#9A9AA3;font-size:12px;}
 :root{
   --purple:#A78BFA; --purple-deep:#9370DB; --purple-strong:#8B6FE8; --purple-soft:#EDE5FC; --purple-tint:#C9B8F5;
   --pink:#FFB6F6; --pink-soft:#FFE9FB;
@@ -1789,8 +1809,8 @@ body {
           <div id="followPage">
             <div class="follow-flex">
                 <div class="search-bar">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#9A9AA3" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="#9A9AA3" stroke-width="2" stroke-linecap="round"/></svg>
-                    <input id="courseSearch" placeholder="搜索课程 / 部位 / 教练" oninput="window.searchCourses(this.value)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="cursor:pointer" onclick="window.doSearch()"><circle cx="11" cy="11" r="7" stroke="#9A9AA3" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="#9A9AA3" stroke-width="2" stroke-linecap="round"/></svg>
+                    <input id="courseSearch" placeholder="搜索课程 / 部位 / 教练" oninput="window.searchCourses(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();window.doSearch()}">
                 </div>
                 <div class="sec-title">今日推荐 <span class="more" onclick="window.followRecoRefresh()">换一批</span></div>
                 <div class="reco-grid" id="followReco"></div>
@@ -1818,6 +1838,15 @@ body {
             </div>
         </div>
 
+        <!-- ===== 搜索结果页（全屏） ===== -->
+        <div id="searchPage" style="display:none;position:fixed;inset:0;z-index:65;background:#F7F7FA;flex-direction:column;">
+            <div class="sp-head">
+                <span class="sp-back" onclick="window.closeSearchPage()">‹</span>
+                <span class="sp-title" id="spTitle">搜索</span>
+                <span class="sp-head-right"></span>
+            </div>
+            <div class="sp-body" id="spBody"></div>
+        </div>
         <!-- ===== 动态页面容器（健康/发布由模块渲染） ===== -->
         <!-- ===== 健康页面（内联 HTML） ===== -->
         <div id="healthPage">
@@ -3486,6 +3515,81 @@ body {
                         box.innerHTML = '<div class="bili-title"><span>B 站全网</span><em style="color:#9A9AA3">搜索暂不可用</em></div>';
                     });
             }, 400);
+        };
+        window.doSearch = function(){
+            var inp = document.getElementById('courseSearch');
+            window.openSearchPage(inp ? inp.value : '');
+        };
+        window.openSearchPage = function(kw){
+            kw = (kw || '').trim();
+            if (!kw) return;
+            var ov = document.getElementById('searchPage');
+            var body = document.getElementById('spBody');
+            if (!ov || !body) return;
+            document.getElementById('spTitle').textContent = '搜索：' + kw;
+            var local = courses.filter(function(c){ return c.name.indexOf(kw) > -1 || (catMap[c.cat] || '').indexOf(kw) > -1; });
+            var html = '';
+            html += '<div class="sp-sec">本地课程 <span>' + (local.length ? local.length + ' 门' : '') + '</span></div>';
+            if (local.length){
+                html += local.map(function(c){
+                    var cover = c.pic ? 'background-image:url(' + c.pic + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#FFE9FB,#FFB6F6);';
+                    return '<div class="sp-card" onclick="window.openVideoPlayer(\'' + c.bv + '\',\'' + c.name.replace(/'/g, '') + '\')">' +
+                        '<div class="sp-thumb" style="' + cover + '"><div class="mini-play"></div><span class="dur">' + c.dur + '</span></div>' +
+                        '<div class="sp-info"><div class="sp-name">' + c.name + '</div>' +
+                        '<div class="sp-sub"><span>' + c.hot + '</span><span>' + c.dur + '</span></div></div>' +
+                        '<span class="sp-go">跟练</span>' +
+                    '</div>';
+                }).join('');
+            } else {
+                html += '<div class="sp-empty">本地暂无匹配课程，看看 B 站全网</div>';
+            }
+            html += '<div class="sp-sec">B 站全网 <span id="spBiliStatus">搜索中…</span></div><div id="spBiliList"><div class="sp-loading">加载中…</div></div>';
+            body.innerHTML = html;
+            ov.style.display = 'flex';
+            if (BILI_WORKER){
+                fetch(BILI_WORKER + '/search?keyword=' + encodeURIComponent(kw), { signal: AbortSignal.timeout(9000) })
+                    .then(function(r){ return r.json(); })
+                    .then(function(j){
+                        var list = j && j.list ? j.list : [];
+                        var st = document.getElementById('spBiliStatus');
+                        var box = document.getElementById('spBiliList');
+                        if (!box) return;
+                        if (!list.length){
+                            if (st) st.textContent = '未找到';
+                            box.innerHTML = '<div class="sp-empty">B 站没搜到相关视频，换个关键词试试</div>';
+                            return;
+                        }
+                        if (st) st.textContent = '搜到 ' + list.length + ' 条';
+                        box.innerHTML = list.map(function(v){
+                            var durTxt = v.duration ? '<span class="dur">' + v.duration + '</span>' : '';
+                            var pic = v.pic ? 'background-image:url(' + v.pic + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#C9B8F5,#E86FB9);';
+                            var sub = '<span>' + v.author + '</span>';
+                            if (v.play && v.play !== 0 && v.play !== '0'){
+                                var pn = parseInt(v.play, 10);
+                                sub += '<span>' + (isNaN(pn) ? v.play : (pn > 9999 ? (pn / 10000).toFixed(1) + '万' : pn)) + ' 播放</span>';
+                            }
+                            return '<div class="sp-card" onclick="window.openVideoPlayer(\'' + v.bvid + '\',\'' + v.title.replace(/'/g, '') + '\')">' +
+                                '<div class="sp-thumb" style="' + pic + '"><div class="mini-play"></div>' + durTxt + '</div>' +
+                                '<div class="sp-info"><div class="sp-name">' + v.title + '</div>' +
+                                '<div class="sp-sub">' + sub + '</div></div>' +
+                                '<span class="sp-go">播放</span>' +
+                            '</div>';
+                        }).join('');
+                    })
+                    .catch(function(){
+                        var st = document.getElementById('spBiliStatus');
+                        if (st) st.textContent = '暂不可用';
+                        var box = document.getElementById('spBiliList');
+                        if (box) box.innerHTML = '<div class="sp-empty">联网搜索暂不可用，请稍后再试</div>';
+                    });
+            } else {
+                document.getElementById('spBiliStatus').textContent = '未开启';
+                document.getElementById('spBiliList').innerHTML = '<div class="sp-empty">联网搜索未配置</div>';
+            }
+        };
+        window.closeSearchPage = function(){
+            var ov = document.getElementById('searchPage');
+            if (ov) ov.style.display = 'none';
         };
         var detailIdx = -1;
         window.openDetail = function(i){
