@@ -3197,6 +3197,7 @@ body {
           document.getElementById('lgdData').innerHTML = data;
           document.getElementById('lgdTime').textContent = fmtLogHM(g.time);
           document.getElementById('lgdOverlay').style.display = 'block';
+            window.__openLayer(function(){ document.getElementById('lgdOverlay').style.display = 'none'; document.getElementById('lgdPop').classList.remove('show'); LGD.photos = null; });
         };
         function showLgdPhoto(i, dir){
           if (!LGD.photos || !LGD.photos.length) return;
@@ -3245,11 +3246,7 @@ body {
           });
           el.addEventListener('dragstart', function(e){ e.preventDefault(); });
         })();
-        window.closeLogDetail = function(){
-          document.getElementById('lgdOverlay').style.display = 'none';
-          document.getElementById('lgdPop').classList.remove('show');
-          LGD.photos = null;
-        };
+        window.closeLogDetail = function(){ window.__closeTop(); };
         document.getElementById('lgdPop').addEventListener('click', function(e){
           var btn = e.target.closest('button'); if (!btn) return;
           var act = btn.dataset.act;
@@ -3405,13 +3402,11 @@ body {
             document.getElementById('vfpTitle').textContent = title;
             document.getElementById('vfpVideo').src = '//player.bilibili.com/player.html?bvid=' + bvid + '&page=1&high_quality=1&autoplay=1&danmaku=0';
             document.getElementById('videoFullPlayer').classList.add('show');
+            window.__openLayer(function(){ document.getElementById('videoFullPlayer').classList.remove('show'); document.getElementById('vfpVideo').src = ''; });
             var tip = document.getElementById('vfpTip');
             if (tip) tip.textContent = '点击播放器右下角 ⛶ 可全屏观看（横屏更佳）';
         };
-        window.closeVideoPlayer = function() {
-            document.getElementById('videoFullPlayer').classList.remove('show');
-            document.getElementById('vfpVideo').src = '';
-        };
+        window.closeVideoPlayer = function(){ window.__closeTop(); };
 
         // ── Follow page course filter ──
         window.filterCourses = function(cat) {
@@ -3546,6 +3541,7 @@ body {
             html += '<div class="sp-sec">B 站全网 <span id="spBiliStatus">搜索中…</span></div><div id="spBiliList"><div class="sp-loading">加载中…</div></div>';
             body.innerHTML = html;
             ov.style.display = 'flex';
+            window.__openLayer(function(){ var o = document.getElementById('searchPage'); if (o) o.style.display = 'none'; });
             if (BILI_WORKER){
                 fetch(BILI_WORKER + '/search?keyword=' + encodeURIComponent(kw), { signal: AbortSignal.timeout(9000) })
                     .then(function(r){ return r.json(); })
@@ -3587,11 +3583,28 @@ body {
                 document.getElementById('spBiliList').innerHTML = '<div class="sp-empty">联网搜索未配置</div>';
             }
         };
-        window.closeSearchPage = function(){
-            var ov = document.getElementById('searchPage');
-            if (ov) ov.style.display = 'none';
-        };
+        window.closeSearchPage = function(){ window.__closeTop(); };
         var detailIdx = -1;
+        var _layerStack = [];
+        window.__openLayer = function(fn){
+          _layerStack.push(fn);
+          try { history.pushState({}, ''); } catch(e){}
+        };
+        window.__closeTop = function(){
+          if (_layerStack.length){
+            var fn = _layerStack.pop();
+            try { fn(); } catch(e){}
+            try { history.back(); } catch(e){}
+            return true;
+          }
+          return false;
+        };
+        window.addEventListener('popstate', function(){
+          if (_layerStack.length){
+            var fn = _layerStack.pop();
+            try { fn(); } catch(e){}
+          }
+        });
         window.openDetail = function(i){
             if (i < 0 || i >= courses.length) return;
             detailIdx = i;
@@ -3606,8 +3619,9 @@ body {
             document.getElementById('detailMoves').innerHTML = c.moves.split(' ').map(function(x){ return '<span>' + x + '</span>'; }).join('');
             document.getElementById('detailFav').classList.toggle('on', c.fav);
             document.getElementById('detailOverlay').classList.add('show');
+            window.__openLayer(function(){ document.getElementById('detailOverlay').classList.remove('show'); });
         };
-        window.closeDetail = function(){ document.getElementById('detailOverlay').classList.remove('show'); };
+        window.closeDetail = function(){ window.__closeTop(); };
         window.toggleDetailFav = function(){
             if (detailIdx < 0) return;
             courses[detailIdx].fav = !courses[detailIdx].fav;
