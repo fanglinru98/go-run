@@ -3442,7 +3442,7 @@ body {
             window.renderCourses();
             window.biliSearch(kw);
         };
-        var BILI_WORKER = ''; // Cloudflare Worker URL，如 https://xxx.workers.dev
+        var BILI_WORKER = 'https://go-run-bili-search.ai-inspiration.workers.dev'; // Cloudflare Worker URL
         var _biliTimer = null;
         window.biliSearch = function(kw){
             var box = document.getElementById('biliResults');
@@ -3466,12 +3466,17 @@ body {
                             return;
                         }
                         var rows = list.map(function(v){
-                            var dur = v.duration ? Math.floor(v.duration / 60) + ':' + String(v.duration % 60).padStart(2, '0') : '';
+                            var durTxt = v.duration ? '<span class="dur">' + v.duration + '</span>' : '';
                             var pic = v.pic ? 'background-image:url(' + v.pic + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#C9B8F5,#E86FB9);';
+                            var sub = '<span>' + v.author + '</span>';
+                            if (v.play && v.play !== 0 && v.play !== '0'){
+                                var pn = parseInt(v.play, 10);
+                                sub += '<span>' + (isNaN(pn) ? v.play : (pn > 9999 ? (pn / 10000).toFixed(1) + '万' : pn)) + ' 播放</span>';
+                            }
                             return '<div class="course-item bili-item" onclick="window.openVideoPlayer(\'' + v.bvid + '\',\'' + v.title.replace(/'/g, '') + '\')">' +
-                                '<div class="c-thumb" style="' + pic + '"><div class="mini-play"></div><span class="dur">' + dur + '</span></div>' +
+                                '<div class="c-thumb" style="' + pic + '"><div class="mini-play"></div>' + durTxt + '</div>' +
                                 '<div class="c-info"><div class="c-name">' + v.title + '</div>' +
-                                '<div class="c-sub"><span>' + v.author + '</span><span>' + (v.play > 9999 ? (v.play / 10000).toFixed(1) + '万' : v.play) + ' 播放</span></div></div>' +
+                                '<div class="c-sub">' + sub + '</div></div>' +
                                 '<div class="c-acts"><button class="mini-btn mini-go" style="pointer-events:none">播放</button></div>' +
                             '</div>';
                         }).join('');
