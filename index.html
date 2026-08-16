@@ -724,7 +724,7 @@ body {
 .health-flex { display:flex; flex-direction:column; gap:10px; padding-top:10px; }
 
 /* metrics + character row */
-.health-row { display:flex; gap:12px; align-items:stretch; }
+.health-row { display:block; }
 .metrics { display:flex; flex-direction:column; gap:6px; width:135px; flex-shrink:0; }
 .metric { background:rgba(255,255,255,0.60); box-shadow:0 4px 16px rgba(31,38,135,0.03); border-radius:16px; outline:1px solid rgba(255,255,255,0.50); outline-offset:-1px; backdrop-filter:blur(6px); padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
 .metric .label { color:#8E8E93; font-size:12px; }
@@ -1713,8 +1713,8 @@ body {
         .pf-cal .d.tr{color:#E86FB9;font-weight:700}
         .pf-cal .d.today{background:#FFB6F6;color:#fff;font-weight:800}
         /* V1 一体模块：头像+统计+月历 */
-        .hmod{margin:14px 22px 0;border-radius:24px;padding:16px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 24px rgba(31,38,135,.08)}
-        .hmod .hd{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid rgba(28,28,30,.06);margin-bottom:14px}
+        .hmod{margin:14px 22px 0;display:flex;flex-direction:column;gap:12px}
+        .hmod .hd{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.85);border-radius:20px;padding:14px 16px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 24px rgba(31,38,135,.08)}
         .hmod .hd-info{flex:1;min-width:0}
         .hmod .av{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#FFB6F6,#A78BFA);display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;border:3px solid #fff;box-shadow:0 8px 20px rgba(167,139,250,.35);flex-shrink:0}
         .hmod .nm{font-size:16px;font-weight:800;color:#3A2E3B}
