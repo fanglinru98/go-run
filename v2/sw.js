@@ -1,10 +1,11 @@
 // ================================================================
 // GO RUN 2.0 Service Worker（PWA 全屏支持）
-// 规矩：发版必须 CACHE_VER +1（例：gorun2-v1 → gorun2-v2）
+// 规矩：发版必须 CACHE_VER +1（例：gorun2-v2 → gorun2-v3）
 // 策略：页面 network-first（保发版即最新）；素材 stale-while-revalidate
 // 注意：SW 只在 HTTPS 或 localhost 生效，file:// 打开自动跳过（页面侧已做判断）
+// 2.0-v2 变更：css/style.css 与 js/*（旧多页架构死代码）已从页面移除并归档，PRECACHE 同步缩减为 12 项
 // ================================================================
-const CACHE_VER = 'gorun2-v1';
+const CACHE_VER = 'gorun2-v2';
 const PRECACHE = [
   './',
   './index.html',
@@ -13,12 +14,6 @@ const PRECACHE = [
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png',
-  './css/style.css',
-  './js/data.js',
-  './js/app.js',
-  './js/modules/publish.js',
-  './js/modules/health.js',
-  './js/modules/profile.js',
   './img/cover/1.jpg',
   './img/cover/2.jpg',
   './img/cover/3.jpg',
@@ -46,7 +41,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
-  if (url.origin !== self.location.origin) return; // 不拦跨域（B站封面等走自身缓存策略）
+  if (url.origin !== self.location.origin) return; // 不拦跨域（B站封面等）
 
   // 页面导航：network-first，断网回落缓存
   if (e.request.mode === 'navigate' || (e.request.headers.get('accept') || '').includes('text/html')) {

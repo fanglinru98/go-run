@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"> <!-- 2.0：去掉禁缩放（伤无障碍）；viewport-fit=cover 供安全区使用 -->
     <meta name="referrer" content="no-referrer">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -21,7 +21,6 @@
 .bili-title em{font-style:normal;font-size:11px;font-weight:500;color:var(--primary,#A78BFA);}
 .bili-item .c-name{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
 .bili-item .mini-go{pointer-events:none;background:linear-gradient(135deg,#A78BFA,#8B6FE8);color:#fff;}
-<style>
 /* 搜索结果页 */
 #searchPage .sp-head{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #F0F0F3;flex-shrink:0;}
 #searchPage .sp-back{width:34px;height:34px;border-radius:50%;background:#F2F1F7;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;color:#3A2E3B;cursor:pointer;padding-bottom:3px;}
@@ -1438,7 +1437,7 @@ body {
 .detail-start:active{transform:scale(.97);background:var(--purple-deep);}
 
 /* ===== 底部导航（同步 demo 悬浮胶囊版） ===== */
-.bottom-tab-bar{position:absolute;left:14px;right:14px;bottom:14px;height:66px;border-radius:26px;padding:0 6px;background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.85);box-shadow:0 12px 32px rgba(70,50,130,.18),0 4px 12px rgba(70,50,130,.08);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-around;z-index:30;}
+.bottom-tab-bar{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));height:66px;border-radius:26px;padding:0 6px;background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.85);box-shadow:0 12px 32px rgba(70,50,130,.18),0 4px 12px rgba(70,50,130,.08);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:space-around;z-index:30;}
 .nav-slot{flex:1;height:66px;display:flex;align-items:center;justify-content:center;position:relative;}
 .tab-item{background:none;border:none;font-family:inherit;cursor:pointer;padding:2px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-3);transition:color .2s;font-size:11px;font-weight:500;position:relative;}
 .tab-item svg{transition:transform .2s;}
@@ -1782,7 +1781,7 @@ body {
                             <circle class="ring-fill" id="ringFill" cx="120" cy="120" r="108" stroke-width="16" stroke-dasharray="678.6" stroke-dashoffset="678.6"/>
                         </svg>
                         <div class="ring-center">
-                            <span class="ring-ic">🔥</span>
+                            <span class="ring-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22c4.4 0 7-2.8 7-6.5 0-2.6-1.3-4.4-2.7-6.1-.9-1.1-1.9-2.2-2.3-3.9-1.5 1-2.4 2.3-2.7 3.8-.9-.7-1.5-1.8-1.7-3.3C7 8 5 10.5 5 13.5 5 19.2 7.6 22 12 22z" fill="#FF8C42"/><path d="M12 22c2.2 0 3.5-1.5 3.5-3.4 0-1.9-1.6-3-2.6-4.6-1.5 1-2.4 2.5-2.4 4.2 0 2.1.6 3.8 1.5 3.8z" fill="#FFD24A"/></svg></span>
                             <div class="ring-num-row"><span class="ring-num" id="kcalNum">0</span><span class="ring-unit">KCAL</span></div>
                             <span class="ring-label">今日消耗</span>
                             <span class="ring-sub" id="kcalPct">0%</span>
@@ -1791,7 +1790,7 @@ body {
                     <div class="b-stats">
                         <div class="b-stat"><b id="statDist">0.0</b><u>KM</u><span>路程</span></div>
                         <div class="b-stat"><b id="statTime">0</b><u>MIN</u><span>时间</span></div>
-                        <div class="b-stat"><b id="statDone">0</b><u>/6</u><span>完成</span></div>
+                        <div class="b-stat"><b id="statDone">0</b><u id="statTotal">/0</u><span>完成</span></div>
                     </div>
                 </section>
                 <!-- 今日运动 -->
@@ -1801,10 +1800,10 @@ body {
                     </div>
                     <div class="reco-head" id="recoHead"><span class="reco-sub">为你推荐热门动作</span><button class="reco-close" onclick="window.closeReco()">✕</button></div>
                     <div class="reco-grid" id="recoGrid">
-                        <div class="rg-card" onclick="window.addRecoFromGrid('平板卧推','力量','4组 × 10次 × 50kg',this)"><span class="rg-ic" style="background:var(--green-soft);color:var(--green-ink)">🏋️</span><div class="rg-info"><div class="rg-name">平板卧推</div><div class="rg-meta">4组×10次×50kg</div></div><span class="rg-plus">＋</span></div>
-                        <div class="rg-card" onclick="window.addRecoFromGrid('慢跑','有氧','5.2 km',this)"><span class="rg-ic" style="background:var(--accent);color:var(--accent-ink)">🏃</span><div class="rg-info"><div class="rg-name">慢跑</div><div class="rg-meta">5.2 km</div></div><span class="rg-plus">＋</span></div>
-                        <div class="rg-card" onclick="window.addRecoFromGrid('深蹲','力量','5组 × 12次 × 60kg',this)"><span class="rg-ic" style="background:var(--green-soft);color:var(--green-ink)">🤸</span><div class="rg-info"><div class="rg-name">深蹲</div><div class="rg-meta">5组×12次×60kg</div></div><span class="rg-plus">＋</span></div>
-                        <div class="rg-card" onclick="window.addRecoFromGrid('拉伸放松','有氧','15 min',this)"><span class="rg-ic" style="background:var(--accent);color:var(--accent-ink)">🧘</span><div class="rg-info"><div class="rg-name">拉伸放松</div><div class="rg-meta">15 min</div></div><span class="rg-plus">＋</span></div>
+                        <div class="rg-card" onclick="window.addRecoFromGrid('平板卧推','力量','4组 × 10次 × 50kg',this)"><span class="rg-ic" style="background:var(--green-soft);color:var(--green-ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v12M17.5 6.5v12M3.5 9v6M20.5 9v6M6.5 12.5h11"/></svg></span><div class="rg-info"><div class="rg-name">平板卧推</div><div class="rg-meta">4组×10次×50kg</div></div><span class="rg-plus">＋</span></div>
+                        <div class="rg-card" onclick="window.addRecoFromGrid('慢跑','有氧','5.2 km',this)"><span class="rg-ic" style="background:var(--accent);color:var(--accent-ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.5" cy="4.5" r="1.8"/><path d="M4 20l4-3 2-4 3 2 4 1M9.5 13l1-4.5 4 1.5 3.5-1"/></svg></span><div class="rg-info"><div class="rg-name">慢跑</div><div class="rg-meta">5.2 km</div></div><span class="rg-plus">＋</span></div>
+                        <div class="rg-card" onclick="window.addRecoFromGrid('深蹲','力量','5组 × 12次 × 60kg',this)"><span class="rg-ic" style="background:var(--green-soft);color:var(--green-ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v4l-4 5M12 11l4 5M5.5 21h13"/></svg></span><div class="rg-info"><div class="rg-name">深蹲</div><div class="rg-meta">5组×12次×60kg</div></div><span class="rg-plus">＋</span></div>
+                        <div class="rg-card" onclick="window.addRecoFromGrid('拉伸放松','有氧','15 min',this)"><span class="rg-ic" style="background:var(--accent);color:var(--accent-ink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-2.5-8-6 2.5 0 5 1 8 3 3-2 5.5-3 8-3 0 3.5-3 6-8 6z"/><circle cx="12" cy="7" r="2.5"/></svg></span><div class="rg-info"><div class="rg-name">拉伸放松</div><div class="rg-meta">15 min</div></div><span class="rg-plus">＋</span></div>
                     </div>
                     <div class="chips" id="tdFilters">
                         <button class="chip on" data-f="全部">全部</button>
@@ -1844,7 +1843,7 @@ body {
                     <div style="font-size:13px;">没有找到相关课程</div>
                     <div style="font-size:11px;margin-top:4px;">换个关键词或分类试试</div>
                 </div>
-                <div class="sec-title">最近跟练 <span class="more">查看全部</span></div>
+                <div class="sec-title">最近跟练 <span class="more" onclick="window.switchTab('follow')">查看全部</span></div>
                 <div class="recent-row" id="recentRow"></div>
             </div>
         </div>
@@ -1865,20 +1864,20 @@ body {
                 <div class="sec-title">今日指标</div>
                 <div class="health-row">
                     <div class="hm-g">
-                        <div class="edtitle">今天燃烧了<br><span class="pink">486</span> 千卡</div>
-                        <div class="edmeta">8月13日 · 训练 3 组 · 状态良好</div>
-                        <div class="ednum"><span class="l">训练时长</span><span class="v">32<em> min</em></span></div>
-                        <div class="ednum"><span class="l">今日步数</span><span class="v">6,480<em> 步</em></span></div>
-                        <div class="ednum"><span class="l">热量缺口</span><span class="v">-180<em> kcal</em></span></div>
+                        <div class="edtitle">今天燃烧了<br><span class="pink" id="htKcal">0</span> 千卡</div>
+                        <div class="edmeta" id="htMeta">--</div>
+                        <div class="ednum"><span class="l">训练时长</span><span class="v"><span id="htDur">0</span><em> min</em></span></div>
+                        <div class="ednum"><span class="l">完成训练</span><span class="v"><span id="htDone">0</span><em> 项</em></span></div>
+                        <div class="ednum"><span class="l">今日步数</span><span class="v">--<em> 步</em></span></div>
                         <div class="edline"><i></i></div>
-                        <div class="edmeta" style="margin-top:8px">目标进度 68% · 已达标部分荧光绿</div>
+                        <div class="edmeta" style="margin-top:8px">网页拿不到手机步数/心率（需系统健康授权）· 以上数据来自「今日」页真实打卡</div>
                     </div>
                 </div>
                 <div class="sec-title" style="font-size:17px;">体重变化</div>
                 <div class="chart-card">
                     <div class="w-header">
-                        <div class="w-current">72<span class="w-unit">.6 kg</span></div>
-                        <div class="w-change"><div class="w-delta down">−0.4</div><div class="w-period">较上周 ↓</div></div>
+                        <div class="w-current" id="wCur">--</div>
+                        <div class="w-change"><div class="w-delta down" id="wDelta" style="display:none;">--</div><div class="w-period" id="wPeriod">暂无记录</div></div>
                     </div>
                     <div class="chart-area" id="chartSvg"></div>
                     <div class="chart-dates" id="chartDates"></div>
@@ -1891,22 +1890,18 @@ body {
                 <div class="sec-title" style="font-size:17px;">饮食记录</div>
                 <div class="diet-card">
                     <div class="diet-summary">
-                        <div class="ds-item"><div class="ds-num">1,850<span class="ds-unit">kcal</span></div><div class="ds-lbl">摄入</div></div>
+                        <div class="ds-item"><div class="ds-num" id="dietIn">0<span class="ds-unit">kcal</span></div><div class="ds-lbl">摄入</div></div>
                         <div class="ds-sep"></div>
-                        <div class="ds-item"><div class="ds-num">2,200<span class="ds-unit">kcal</span></div><div class="ds-lbl">消耗</div></div>
+                        <div class="ds-item"><div class="ds-num" id="dietOut">0<span class="ds-unit">kcal</span></div><div class="ds-lbl">训练消耗</div></div>
                         <div class="ds-sep"></div>
-                        <div class="ds-item"><div class="ds-num">−350<span class="ds-unit">kcal</span></div><div class="ds-lbl">剩余</div></div>
+                        <div class="ds-item"><div class="ds-num" id="dietLeft">0<span class="ds-unit">kcal</span></div><div class="ds-lbl">差额</div></div>
                     </div>
                     <div class="diet-divider"></div>
-                    <div class="diet-meals">
-                        <div class="dm-row"><div class="dm-icon" style="background:rgba(255,182,246,0.25);"></div><div class="dm-info"><div class="dm-name">早餐</div><div class="dm-time">08:30</div></div><div class="dm-kcal">450</div><div class="dm-arrow">›</div></div>
-                        <div class="dm-row"><div class="dm-icon" style="background:rgba(255,140,66,0.18);"></div><div class="dm-info"><div class="dm-name">午餐</div><div class="dm-time">12:15</div></div><div class="dm-kcal">680</div><div class="dm-arrow">›</div></div>
-                        <div class="dm-row"><div class="dm-icon" style="background:rgba(42,156,255,0.15);"></div><div class="dm-info"><div class="dm-name">晚餐</div><div class="dm-time">18:40</div></div><div class="dm-kcal">720</div><div class="dm-arrow">›</div></div>
-                    </div>
+                    <div class="diet-meals" id="dietMeals"></div>
                     <div class="diet-input">
-                        <input type="number" placeholder="摄入 kcal" value="350">
-                        <select><option>早餐</option><option>午餐</option><option>晚餐</option></select>
-                        <button onclick="window.showToast('已记录')">记录</button>
+                        <input type="number" id="dietKcalIn" placeholder="摄入 kcal">
+                        <select id="dietMeal"><option>早餐</option><option>午餐</option><option>晚餐</option><option>加餐</option></select>
+                        <button onclick="window.addDiet()">记录</button>
                     </div>
                 </div>
             </div>
@@ -1954,11 +1949,11 @@ body {
         <div id="profilePage">
             <div class="hmod">
                 <div class="hd">
-                    <div class="av" onclick="window.pickAvatar()" id="profileAv">🏃</div>
+                    <div class="av" onclick="window.pickAvatar()" id="profileAv"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8B6FE8" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></div>
                     <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="window.applyAvatar(this)">
                     <div class="hd-info">
                         <div class="nm">GO RUN</div>
-                        <div class="lv" id="hmodLv">等级 Lv.5 · 加入 2026-07-01</div>
+                        <div class="lv" id="hmodLv">本地模式 · 登录后多端同步</div>
                     </div>
                     <div class="hd-right">
                         <button id="hdLoginBtn" onclick="window.openAcctModal()" class="hd-login" style="display:none;">登录</button>
@@ -1967,20 +1962,14 @@ body {
                 </div>
                 <div class="bd">
                     <div class="stats">
-                        <div class="stat"><div class="si" style="background:rgba(255,182,246,.25);"><svg viewBox="0 0 24 24" fill="none" stroke="#E86FB9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/><path d="m9 15 2 2 4-4"/></svg></div><div class="tx"><b>5/7</b><span>本周训练</span></div></div>
-                        <div class="stat"><div class="si" style="background:rgba(167,139,250,.2);"><svg viewBox="0 0 24 24" fill="none" stroke="#8B6FE8" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="tx"><b>45min</b><span>平均时长</span></div></div>
-                        <div class="stat"><div class="si" style="background:linear-gradient(135deg,#FFF3C4,#FFD24A);"><svg viewBox="0 0 24 24" fill="none" stroke="#C8961E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M8.5 13 7 21l5-2.5L17 21l-1.5-8"/></svg></div><div class="tx"><b>12</b><span>荣誉勋章</span></div></div>
+                        <div class="stat"><div class="si" style="background:rgba(255,182,246,.25);"><svg viewBox="0 0 24 24" fill="none" stroke="#E86FB9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/><path d="m9 15 2 2 4-4"/></svg></div><div class="tx"><b id="stWeek">0/7</b><span>本周训练</span></div></div>
+                        <div class="stat"><div class="si" style="background:rgba(167,139,250,.2);"><svg viewBox="0 0 24 24" fill="none" stroke="#8B6FE8" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="tx"><b id="stAvg">--</b><span>平均时长</span></div></div>
+                        <div class="stat"><div class="si" style="background:linear-gradient(135deg,#FFF3C4,#FFD24A);"><svg viewBox="0 0 24 24" fill="none" stroke="#C8961E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M8.5 13 7 21l5-2.5L17 21l-1.5-8"/></svg></div><div class="tx"><b id="stTotal">0</b><span>累计打卡</span></div></div>
                     </div>
                     <div class="cal">
-                        <div class="mt"><span>7月</span></div>
+                        <div class="mt"><span id="miniCalMonth">--</span></div>
                         <div class="wd"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
-                        <div class="g">
-                            <span class="d dim">29</span><span class="d dim">30</span><span class="d">1</span><span class="d tr">2</span><span class="d">3</span><span class="d">4</span><span class="d">5</span>
-                            <span class="d">6</span><span class="d">7</span><span class="d tr">8</span><span class="d">9</span><span class="d">10</span><span class="d">11</span><span class="d tr">12</span>
-                            <span class="d">13</span><span class="d">14</span><span class="d">15</span><span class="d">16</span><span class="d tr">17</span><span class="d">18</span><span class="d">19</span>
-                            <span class="d">20</span><span class="d">21</span><span class="d">22</span><span class="d">23</span><span class="d">24</span><span class="d today tr">25</span><span class="d">26</span>
-                            <span class="d">27</span><span class="d">28</span><span class="d">29</span><span class="d">30</span><span class="d">31</span><span class="d dim">1</span><span class="d dim">2</span>
-                        </div>
+                        <div class="g" id="miniCalGrid"></div>
                     </div>
                 </div>
             </div>
@@ -2006,77 +1995,14 @@ body {
         <div class="nav-slot"><button class="tab-item" data-tab="health" onclick="window.switchTab('health')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-9.5-9C1 8.5 3 5 6.5 5c2 0 3.5 1 4.5 2.5C12 6 13.5 5 15.5 5 19 5 21 8.5 19.5 12c-2 4.4-7.5 9-7.5 9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>健康</button></div>
         <div class="nav-slot"><button class="tab-item" data-tab="profile" onclick="window.switchTab('profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>个人</button></div>
     </div>
-    <!-- ===== 发布页进阶数据弹窗 ===== -->
-    <div class="pub-modal-overlay" id="pubAdvModal" onclick="window.closePubAdv()">
-        <div class="pub-modal-panel" onclick="event.stopPropagation()">
-            <div class="pub-modal-handle"></div>
-            <div class="pub-modal-header">
-                <div class="pub-modal-title">进阶数据</div>
-                <button class="pub-btn-auto" onclick="window.autoFillPub()">自动导入</button>
-            </div>
-            <div class="pub-data-grid">
-                <div class="pub-data-cell"><label>体重 (kg) · 选填</label><input type="number" id="pfWeight" placeholder="--" step="0.1"></div>
-                <div class="pub-data-cell"><label>体脂率 (%) · 选填</label><input type="number" id="pfFat" placeholder="--" step="0.1"></div>
-                <div class="pub-data-cell"><label>消耗热量 (kcal) · 选填</label><input type="number" id="pfKcal" placeholder="--"></div>
-                <div class="pub-data-cell"><label>HBM (kg) · 选填</label><input type="number" id="pfHbm" placeholder="--" step="0.1"></div>
-                <div class="pub-data-cell"><label>骨骼肌 (kg) · 选填</label><input type="number" id="pfMuscle" placeholder="--" step="0.1"></div>
-                <div class="pub-data-cell"><label>内脏脂肪 · 选填</label><input type="number" id="pfVisceral" placeholder="--" step="0.1"></div>
-            </div>
-            <button class="pub-btn-gen" onclick="window.genPubLog()">生成训练日志</button>
-        </div>
-    </div>
+    <!-- 2.0：pubAdvModal 死链已删（无入口，输入功能由发布页「进阶数据」下拉承担） -->
 
-    <!-- ===== 训练日志居中弹窗 ===== -->
-    <div class="pub-log-overlay" id="pubLogOverlay" onclick="window.closePubLog()">
-        <div class="pub-log-card" onclick="event.stopPropagation()">
-            <div class="pub-log-hero">📸<div class="pub-log-count">1 / 3</div></div>
-            <div class="pub-log-thumbs"><div class="pub-log-thumb on">📸</div><div class="pub-log-thumb">📸</div><div class="pub-log-thumb">📸</div></div>
-            <div class="pub-log-head"><span class="pub-log-date" id="plpDate"></span><span class="pub-log-mood">😤💪🔥</span></div>
-            <div class="pub-log-text" id="plpText"></div>
-            <div class="pub-log-data" id="plogRows"></div>
-            <div class="pub-log-actions">
-                <button class="pub-btn-close" onclick="window.closePubLog()">关闭</button>
-                <button class="pub-btn-post" onclick="window.doPubPost()">发布</button>
-            </div>
-        </div>
-    </div>
+    <!-- 2.0：pubLogOverlay 死链已删（入口 genPubLog 已删） -->
 
 
-    <!-- ===== 进阶数据抽屉（发布页） ===== -->
-    <div class="sheet-overlay" id="advSheet" onclick="window.closeAdvSheet()">
-        <div class="sheet-panel" onclick="event.stopPropagation()">
-            <div class="sheet-handle"></div>
-            <div style="font-size:15px;font-weight:800;margin-bottom:4px;">进阶数据</div>
-            <div style="font-size:10px;color:var(--text-3);margin-bottom:12px;">体脂 / HBM / 趋势 · 选填</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <div style="background:rgba(255,255,255,.6);border:1px solid rgba(60,60,67,.1);border-radius:12px;padding:9px 11px;"><label style="font-size:10px;color:#8E8E93;display:block;margin-bottom:3px;">体重 (kg)</label><input type="number" value="72.6" style="width:100%;border:none;background:transparent;font-size:14px;font-weight:700;font-family:inherit;outline:none;color:var(--text);"></div>
-                <div style="background:rgba(255,255,255,.6);border:1px solid rgba(60,60,67,.1);border-radius:12px;padding:9px 11px;"><label style="font-size:10px;color:#8E8E93;display:block;margin-bottom:3px;">体脂率 (%)</label><input type="number" value="15.2" style="width:100%;border:none;background:transparent;font-size:14px;font-weight:700;font-family:inherit;outline:none;color:var(--text);"></div>
-                <div style="background:rgba(255,255,255,.6);border:1px solid rgba(60,60,67,.1);border-radius:12px;padding:9px 11px;"><label style="font-size:10px;color:#8E8E93;display:block;margin-bottom:3px;">骨骼肌 (kg)</label><input type="number" value="42.5" style="width:100%;border:none;background:transparent;font-size:14px;font-weight:700;font-family:inherit;outline:none;color:var(--text);"></div>
-                <div style="background:rgba(255,255,255,.6);border:1px solid rgba(60,60,67,.1);border-radius:12px;padding:9px 11px;"><label style="font-size:10px;color:#8E8E93;display:block;margin-bottom:3px;">消耗 (kcal)</label><input type="number" value="320" style="width:100%;border:none;background:transparent;font-size:14px;font-weight:700;font-family:inherit;outline:none;color:var(--text);"></div>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:14px;">
-                <button class="auto-btn" onclick="window.showToast('自动导入今日数据')">自动导入</button>
-                <button class="grad-btn" style="flex:1;padding:12px;font-size:13px;" onclick="window.genLog()">生成日志</button>
-            </div>
-        </div>
-    </div>
+    <!-- 2.0：advSheet 死链已删（无入口的第三套进阶数据 UI，含假预填 72.6/15.2/42.5/320） -->
 
-    <!-- ===== 训练日志浮窗（发布页） ===== -->
-    <div class="sheet-overlay" id="logSheet" onclick="window.closeLogSheet()">
-        <div class="sheet-panel" onclick="event.stopPropagation()">
-            <div class="sheet-handle"></div>
-            <div style="font-size:15px;font-weight:800;margin-bottom:10px;">训练日志</div>
-            <div style="height:90px;border-radius:12px;background:linear-gradient(135deg,#FFE9FB,#C9F9FE);display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:10px;">W</div>
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-bottom:8px;"><span>2026-07-26 周日</span><span>😤💪🔥</span></div>
-            <div style="font-size:12px;color:var(--text-2);line-height:1.7;margin-bottom:10px;" id="pvText">今天练了腹部核心，状态不错！坚持第 21 天...</div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <div style="flex:1;min-width:80px;background:rgba(255,255,255,.6);border-radius:10px;padding:7px;text-align:center;"><div style="font-size:13px;font-weight:900;color:var(--purple-deep);">72.6kg</div><div style="font-size:9px;color:var(--text-3);">体重</div></div>
-                <div style="flex:1;min-width:80px;background:rgba(255,255,255,.6);border-radius:10px;padding:7px;text-align:center;"><div style="font-size:13px;font-weight:900;color:var(--purple-deep);">15.2%</div><div style="font-size:9px;color:var(--text-3);">体脂</div></div>
-                <div style="flex:1;min-width:80px;background:rgba(255,255,255,.6);border-radius:10px;padding:7px;text-align:center;"><div style="font-size:13px;font-weight:900;color:var(--purple-deep);">320kcal</div><div style="font-size:9px;color:var(--text-3);">消耗</div></div>
-            </div>
-            <button class="grad-btn" style="width:100%;margin-top:14px;padding:12px;font-size:14px;" onclick="window.closeLogSheet();window.showToast('发布成功！')">发布</button>
-        </div>
-    </div>
+    <!-- 2.0：logSheet 假发布链已删（点发布弹「发布成功！」但什么都不存的假浮窗） -->
 
     <!-- ===== 课程详情页（跟练 V2） ===== -->
     <div class="detail-overlay" id="detailOverlay">
@@ -2142,13 +2068,6 @@ body {
     <div class="modal-panel">
         <div class="modal-header">
             <button class="close-icon" id="modalCloseBtn" onclick="window.closeModal()">✕</button>
-        </div>
-        <div class="character-slot">
-            <div class="placeholder">
-                <div class="icon">🧑‍🦰</div>
-                <div class="text">3D 形象预留</div>
-                <div class="sub">即将上线</div>
-            </div>
         </div>
         <div class="tab-switch-borderless" id="tabSwitch">
             <span class="tab-label active" data-tab="0">无氧</span>
@@ -2217,7 +2136,7 @@ body {
             <div class="sm-head">
                 <span class="sm-title">训练日志</span>
             </div>
-            <div class="sm-photo" id="smPhoto"><span class="sm-emoji">🏋️</span><span class="sm-count" id="smCount"></span></div>
+            <div class="sm-photo" id="smPhoto"><span class="sm-emoji"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#C9A8F5" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v12M17.5 6.5v12M3.5 9v6M20.5 9v6M6.5 12.5h11"/></svg></span><span class="sm-count" id="smCount"></span></div>
             <div class="sm-text" id="smText"></div>
             <div class="sm-grid">
                 <div class="sm-cell"><div class="lbl">日期</div><div class="val" id="smDate"></div></div>
@@ -2305,11 +2224,7 @@ body {
     </div>
   </div>
 </div>
-<script src="js/data.js"></script>
-<script src="js/modules/publish.js"></script>
-<script src="js/modules/health.js"></script>
-<script src="js/modules/profile.js"></script>
-<script src="js/app.js"></script>
+<!-- 2.0 修复：js/* 为旧多页架构死代码（零引用、confirmPublish 三重定义），已归档移除加载 -->
 
 <!-- ===== 完全接管页面切换逻辑（不调用原始 switchTab） ===== -->
 <script>
@@ -2337,21 +2252,47 @@ body {
   // ── 本地持久化（localStorage，刷新不丢失） ──
   var STORE = {
     get: function(k, d){ try { var v = localStorage.getItem('gorun_' + k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
-    set: function(k, v){ try { localStorage.setItem('gorun_' + k, JSON.stringify(v)); } catch(e){} }
+    set: function(k, v){ try { localStorage.setItem('gorun_' + k, JSON.stringify(v)); } catch(e){ if (typeof window.showToast === 'function') window.showToast('⚠️ 本地存储已满，这次改动可能没存上（通常是照片太多）'); } }
+  };
+  // ── 2.0 数据模型迁移 ──
+  // 旧版：完成状态存 tdCompleted（下标数组，删除/重排即错位）；条目无日期、无卡路里字段。
+  // 新版：每条运动自带 { date:'YYYY-MM-DD', done, kcal, dur, dist, doneAt }，跨天历史可查。
+  // 迁移规则：无 date → 归入今天；done ← 旧 tdCompleted 下标；kcal/dur/dist ← 0（旧数据本就没记）。
+  var KCAL_STRENGTH = 0.04;   // 力量卡路里粗估系数：每组 × 每次 × 每kg ≈ 0.04 kcal
+  var TD_PAD = function(n){ return (n < 10 ? '0' : '') + n; };
+  var TD_TODAY = function(){ var n = new Date(); return n.getFullYear() + '-' + TD_PAD(n.getMonth() + 1) + '-' + TD_PAD(n.getDate()); };
+  window.__tdParseMeta = function(meta){   // 从 meta 文案粗提数据：'4组 × 10次 × 50kg' / '5.2 km' / '15 min'
+    var r = { kcal: 0, dur: 0, dist: 0 }, m;
+    if ((m = (meta || '').match(/(\d+)\s*组\s*×\s*(\d+)\s*次\s*×\s*([\d.]+)\s*kg/))) r.kcal = Math.round(Number(m[1]) * Number(m[2]) * Number(m[3]) * KCAL_STRENGTH);
+    if ((m = (meta || '').match(/([\d.]+)\s*km/))) r.dist = parseFloat(m[1]) || 0;
+    if ((m = (meta || '').match(/(\d+)\s*min/i))) r.dur = parseFloat(m[1]) || 0;
+    return r;
+  };
+  window.__migrateWorkouts = function(arr){
+    if (!arr || !arr.length) return arr || [];
+    var legacyDone = STORE.get('tdCompleted', null) || [];
+    var td = TD_TODAY();
+    arr.forEach(function(w, i){
+      if (!w.date) w.date = td;
+      if (typeof w.done !== 'boolean') w.done = legacyDone.indexOf(i) > -1;
+      if (typeof w.kcal !== 'number') w.kcal = 0;
+      if (typeof w.dur !== 'number') w.dur = 0;
+      if (typeof w.dist !== 'number') w.dist = 0;
+      if (w.done && !w.doneAt) w.doneAt = Date.now();
+    });
+    return arr;
   };
   (function(){
     try {
       var saved = STORE.get('tdWorkouts', null);
-      if (saved && saved.length) tdWorkouts = saved;
-      var done = STORE.get('tdCompleted', null);
-      if (done && done.length) tdCompleted = done;
+      if (saved && saved.length) tdWorkouts = window.__migrateWorkouts(saved);
       if (STORE.get('recoHidden', false)){
         var hd = document.getElementById('recoHead'); if (hd) hd.style.display = 'none';
         var gr = document.getElementById('recoGrid'); if (gr) gr.style.display = 'none';
       }
     } catch(e){}
   })();
-  function saveWorkouts(){ STORE.set('tdWorkouts', tdWorkouts); STORE.set('tdCompleted', tdCompleted); if (window.__syncPush) window.__syncPush(); }
+  function saveWorkouts(){ STORE.set('tdWorkouts', tdWorkouts); if (window.__syncPush) window.__syncPush(); } // 2.0：完成状态并入 done 字段，不再双写 tdCompleted
   var tdFilter = '全部';
   var dragMode = false;   // 拖拽模式
   var skipFlip = false;   // 拖拽松手时禁用本次 FLIP（避免回滑误导）
@@ -2360,32 +2301,43 @@ body {
   function tdRenderCal(){
     var row = document.getElementById('tdCalRow'); if (!row) return;
     row.innerHTML = '';
+    var n = new Date();
+    var ym = n.getFullYear() + '-' + TD_PAD(n.getMonth() + 1) + '-';
     tdDates.forEach(function(d){
       var on = tdSelected === d.date;
+      var hasDone = tdWorkouts.some(function(w){ return w.done && w.date === ym + TD_PAD(parseInt(d.date, 10)); }); // 2.0：圆点=该日确有已完成（原先写死 false 永远是灰的）
       var b = document.createElement('button');
       b.className = 'cal-cell' + (on ? ' sel' : '');
       b.setAttribute('aria-label', d.day + ' ' + d.date + '日');
-      b.innerHTML = '<span class="cd">' + d.day + '</span><span class="cn">' + d.date + '</span>' + (d.dot ? '<span class="dot"></span>' : '');
-      b.onclick = function(){ tdSelected = d.date; tdRenderCal(); };
+      b.innerHTML = '<span class="cd">' + d.day + '</span><span class="cn">' + d.date + '</span>' + (hasDone ? '<span class="dot"></span>' : '');
+      b.onclick = function(){ tdSelected = d.date; tdRenderCal(); tdUpdateProgress(); }; // 2.0：进度按所选日期实时切换
       row.appendChild(b);
     });
   }
 
   var RING_C = 678.6;
   function tdUpdateProgress(){
-    var total = tdWorkouts.length || 1;
-    var done = tdCompleted.length;
-    var progress = Math.round(done / total * 100);
-    var kcal = done * 86;
-    document.getElementById('kcalNum').textContent = kcal.toLocaleString();
+    // 2.0：真实数据——只统计选中日期；kcal/路程/时长=已完成条目实际记录之和（不再用 完成数×86、8.4×进度% 等假公式）
+    var n = new Date();
+    var ymd = n.getFullYear() + '-' + TD_PAD(n.getMonth() + 1) + '-' + TD_PAD(parseInt(tdSelected, 10));
+    var dayItems = tdWorkouts.filter(function(w){ return w.date === ymd; });
+    var total = dayItems.length;
+    var doneItems = dayItems.filter(function(w){ return w.done; });
+    var done = doneItems.length;
+    var progress = total ? Math.round(done / total * 100) : 0;
+    var kcal = 0, dist = 0, dur = 0;
+    doneItems.forEach(function(w){ kcal += (w.kcal || 0); dist += (w.dist || 0); dur += (w.dur || 0); });
+    document.getElementById('kcalNum').textContent = Math.round(kcal).toLocaleString();
     document.getElementById('kcalPct').textContent = progress + '%';
     document.getElementById('ringFill').style.strokeDashoffset = RING_C * (1 - progress / 100);
-    document.getElementById('statDist').textContent = (8.4 * progress / 100).toFixed(1);
-    document.getElementById('statTime').textContent = Math.round(60 * progress / 100);
+    document.getElementById('statDist').textContent = dist.toFixed(1);
+    document.getElementById('statTime').textContent = Math.round(dur);
     document.getElementById('statDone').textContent = done;
+    var st = document.getElementById('statTotal');
+    if (st) st.textContent = '/' + total;   // 分母跟随真实条目数（原 HTML 写死 /6）
   }
 
-  function isDone(w){ return tdCompleted.indexOf(tdWorkouts.indexOf(w)) > -1; }
+  function isDone(w){ return !!w.done; } // 2.0：完成状态在条目自身
 
   // 勾选完成：大圆环 B+C 庆祝
   function ringCelebrate(){
@@ -2450,11 +2402,11 @@ body {
       // 勾选
       card.onclick = function(){
         if (dragMode) return;
-        var wasDone = done;
-        var p = tdCompleted.indexOf(orig);
-        if (p > -1) tdCompleted.splice(p, 1); else tdCompleted.push(orig);
+        var wasDone = w.done;
+        w.done = !w.done;                       // 2.0：完成状态记在条目上，跨天/重排/删除都不丢
+        w.doneAt = w.done ? Date.now() : null;
         if (!wasDone) ringCelebrate();
-        tdUpdateProgress(); tdRenderList();
+        tdUpdateProgress(); tdRenderCal(); tdRenderList();   // 2.0：tdRenderCal 让日历圆点随勾选实时亮/灭
         saveWorkouts();
       };
       // 设置菜单
@@ -2529,8 +2481,7 @@ body {
           var hidden = tdWorkouts.filter(function(w){ return shown.indexOf(w) === -1; });
           shown.splice(shown.indexOf(cardObj), 1);
           shown.splice(target, 0, cardObj);
-          var doneObjs = tdCompleted.map(function(i){ return tdWorkouts[i]; });
-          tdWorkouts = shown.concat(hidden);
+          tdWorkouts = shown.concat(hidden);   // 2.0：done 随对象走，拖拽重排不再重建下标
           // 置顶卡提到数据首位
           var pinPos = -1;
           for (var pi = 0; pi < tdWorkouts.length; pi++){ if (tdWorkouts[pi].pinned){ pinPos = pi; break; } }
@@ -2539,7 +2490,6 @@ body {
             tdWorkouts.splice(pinPos, 1);
             tdWorkouts.unshift(pinItem);
           }
-          tdCompleted = doneObjs.map(function(o){ return tdWorkouts.indexOf(o); });
           saveWorkouts();
           // 拖动中已实时让位，松手直接静默重排（不播回滑动画）
           skipFlip = true;
@@ -2611,15 +2561,12 @@ body {
       } else if (act === 'edit'){
         openEdit(idx);
       } else if (act === 'del'){
-        var doneObjs = tdCompleted.map(function(i){ return tdWorkouts[i]; });
-        tdWorkouts.splice(idx, 1);
-        tdCompleted = doneObjs.map(function(o){ return tdWorkouts.indexOf(o); }).filter(function(p){ return p > -1; });
+        tdWorkouts.splice(idx, 1);   // 2.0：完成状态在条目上，删除不再需要重建下标
         tdUpdateProgress(); tdRenderList();
         window.showToast('已删除');
         saveWorkouts();
       } else if (act === 'pin'){
         var item = tdWorkouts[idx];
-        var doneObjs2 = tdCompleted.map(function(i){ return tdWorkouts[i]; });
         if (item.pinned){
           // 取消置顶：清除标记 + 移回原位
           var origIdx = item._origIdx !== undefined ? item._origIdx : 0;
@@ -2628,7 +2575,6 @@ body {
           tdWorkouts.splice(Math.min(origIdx, tdWorkouts.length), 0, item);
           item.pinned = false;
           delete item._origIdx;
-          tdCompleted = doneObjs2.map(function(o){ return tdWorkouts.indexOf(o); });
           tdRenderList();
           window.showToast('已取消置顶');
           saveWorkouts();
@@ -2639,7 +2585,6 @@ body {
           item.pinned = true;
           tdWorkouts.splice(idx, 1);
           tdWorkouts.unshift(item);
-          tdCompleted = doneObjs2.map(function(o){ return tdWorkouts.indexOf(o); });
           tdRenderList();
           window.showToast('已置顶');
           saveWorkouts();
@@ -2697,10 +2642,13 @@ body {
       var r = document.getElementById('editReps').value || '10';
       var wt = document.getElementById('editWeight').value || '0';
       w.meta = g + '组 × ' + r + '次 × ' + wt + 'kg';
+      w.kcal = Math.round(Number(g) * Number(r) * Number(wt) * KCAL_STRENGTH); // 2.0：编辑后同步重算卡路里
+      w.dur = 0; w.dist = 0;
     } else {
       var d = document.getElementById('editDur').value || '30';
       var dist = document.getElementById('editDist').value || '0';
       w.meta = dist + ' km · ' + d + '分钟';
+      w.dur = parseFloat(d) || 0; w.dist = parseFloat(dist) || 0;   // 2.0：编辑后同步真实时长/路程
     }
     window.closeEdit();
     tdRenderList();
@@ -2806,7 +2754,21 @@ body {
             'profile': 'pages/profile.html',
         };
 
+        // 2.0：Android 返回键 → 逐级回退 tab（只在 history 里带 gorunTab 标记时接管，弹层栈逻辑不受影响）
+        window.addEventListener('popstate', function(e){
+            var t = e.state && e.state.gorunTab;
+            if (!t || !window.switchTab) return;
+            window.__tabNavPop = true;   // 标记本次切换来自返回键，switchTab 内不再 pushState
+            try { window.switchTab(t); } catch(err){}
+        });
         window.switchTab = function(tab) {
+            // 2.0：tab 切换进 history 栈——Android 返回键可逐级回退 tab（popstate 监听见下方；与弹层栈共存）
+            try {
+                if (!window.__tabNavPop && (!history.state || history.state.gorunTab !== tab)){
+                    history.pushState({ gorunTab: tab }, '');
+                }
+                window.__tabNavPop = false;
+            } catch(e){}
             document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
             const ab = document.querySelector(`.tab-item[data-tab="${tab}"]`);
             if (ab) ab.classList.add('active');
@@ -2832,7 +2794,7 @@ body {
             if (tab === 'health') {
                 document.getElementById('pageContainer').classList.add('hidden');
                 document.getElementById('healthPage').classList.add('active');
-                setTimeout(initHealthTabs, 100);
+                setTimeout(function(){ initHealthTabs(); renderHealthToday(); renderDiet(); }, 100);
                 return;
             }
             if (tab === 'publish') {
@@ -2843,7 +2805,7 @@ body {
             if (tab === 'profile') {
                 document.getElementById('pageContainer').classList.add('hidden');
                 document.getElementById('profilePage').classList.add('active');
-                renderProfileCalendar();
+                renderProfileCalendar(); renderProfileStats(); renderProfileHead();
                 if (typeof renderLogWall === 'function') renderLogWall();
                 return;
             }
@@ -2851,7 +2813,6 @@ body {
             const container = document.getElementById('pageContainer');
             const url = pageMap[tab];
             if (!url) { container.innerHTML = '<div style="padding:40px;text-align:center;color:#8e8e93;">页面不存在</div>'; return; }
-
             container.innerHTML = '<div style="padding:40px;text-align:center;color:#8e8e93;">加载中…</div>';
             fetch(url + '?t=' + Date.now())
                 .then(r => r.text())
@@ -2859,31 +2820,68 @@ body {
                 .catch(() => { container.innerHTML = '<div style="padding:40px;text-align:center;color:#8e8e93;">页面加载失败</div>'; });
         };
 
-        // ── Health page weight chart ──
-        var chartData = {
-            day:   { vals:[73.2,74.5,73.8,72.1,73.0,74.0,72.6], dates:['7/22','7/23','7/24','7/25','7/26','7/27','7/28'], cur:'72.6', delta:'−0.4', sub:'较昨日 ↓' },
-            week:  { vals:[74.0,73.5,73.0,72.6],              dates:['7月第1周','7月第2周','7月第3周','7月第4周'], cur:'72.6', delta:'−1.4', sub:'较上月 ↓' },
-            month: { vals:[76.0,75.2,74.5,74.0,73.2,72.6],    dates:['2月','3月','4月','5月','6月','7月'], cur:'72.6', delta:'−3.4', sub:'较半年前 ↓' }
+        // ── Health page weight chart（2.0：真实 bodyMetrics，发布页「进阶数据」录入，随发布/云同步持久化） ──
+        function bodyMetricsAll(){ return STORE.get('bodyMetrics', []); }
+        window.__bmUpsert = function(rec){   // {date, weight, fat, hbm} 同日覆盖
+            var arr = bodyMetricsAll();
+            var i = -1;
+            for (var k = 0; k < arr.length; k++){ if (arr[k].date === rec.date){ i = k; break; } }
+            if (i > -1) { for (var key in rec) arr[i][key] = rec[key]; }
+            else arr.push(rec);
+            arr.sort(function(a, b){ return a.date < b.date ? -1 : 1; });
+            STORE.set('bodyMetrics', arr);
+            if (window.__syncPush) window.__syncPush();
         };
+        function chartSeries(count){ return bodyMetricsAll().slice(Math.max(0, bodyMetricsAll().length - count)); }
         window.drawChart = function(period) {
-            var d = chartData[period];
-            var pts = d.vals, xs = [], ys = [], n = pts.length, w = 340, h = 70, pad = 20;
+            var svgEl = document.getElementById('chartSvg');
+            var datesEl = document.getElementById('chartDates');
+            var curEl = document.querySelector('.w-current');
+            var deltaEl = document.getElementById('wDelta');
+            var periodEl = document.getElementById('wPeriod');
+            var recs = chartSeries(period === 'day' ? 7 : (period === 'week' ? 4 : 6));
+            var setCur = function(v){
+                if (!curEl) return;
+                var s = String(v);
+                if (s.indexOf('.') > -1) curEl.innerHTML = s.split('.')[0] + '<span class="w-unit">.' + s.split('.')[1] + ' kg</span>';
+                else curEl.innerHTML = s + '<span class="w-unit"> kg</span>';
+            };
+            if (!recs.length){
+                if (svgEl) svgEl.innerHTML = '<div style="padding:18px 8px;text-align:center;color:#9A9AA3;font-size:12px;">暂无体重记录 · 在「记录」页展开「进阶数据」填写体重并发布，这里就会生成趋势曲线</div>';
+                if (datesEl) datesEl.innerHTML = '';
+                setCur('--');
+                if (deltaEl) deltaEl.style.display = 'none';
+                if (periodEl) periodEl.textContent = '暂无记录';
+                return;
+            }
+            var pts = recs.map(function(r){ return r.weight || 0; }).filter(function(v){ return v > 0; });
+            if (pts.length < 2){
+                if (svgEl) svgEl.innerHTML = '<div style="padding:18px 8px;text-align:center;color:#9A9AA3;font-size:12px;">已有 ' + recs.length + ' 条记录 · 再录一次即可生成曲线</div>';
+                if (datesEl) datesEl.innerHTML = '<span>' + recs[recs.length - 1].date.slice(5) + '</span>';
+                setCur(pts.length ? pts[pts.length - 1] : '--');
+                if (deltaEl) deltaEl.style.display = 'none';
+                if (periodEl) periodEl.textContent = '共 ' + recs.length + ' 条记录';
+                return;
+            }
+            var dates = recs.map(function(r){ return r.date.slice(5); });
+            var cur = pts[pts.length - 1], first = pts[0];
+            var delta = Math.round((cur - first) * 10) / 10;
+            var xs = [], ys = [], n = pts.length, w = 340, h = 70, pad = 20;
             var min = Math.min.apply(null, pts) - 2, max = Math.max.apply(null, pts) + 2, range = max - min;
             for (var i = 0; i < n; i++) { xs.push(pad + (w - 2*pad) * i / (n-1)); ys.push(h - 10 - (pts[i] - min) / range * (h - 20)); }
             var path = 'M' + xs[0].toFixed(1) + ' ' + ys[0].toFixed(1);
             for (var i = 0; i < n-1; i++) { var cx1 = xs[i] + (xs[i+1]-xs[i])*0.5; path += ' C' + cx1.toFixed(1) + ' ' + ys[i].toFixed(1) + ' ' + cx1.toFixed(1) + ' ' + ys[i+1].toFixed(1) + ' ' + xs[i+1].toFixed(1) + ' ' + ys[i+1].toFixed(1); }
             var dots = '';
             for (var i = 0; i < n; i++) { dots += '<circle cx="' + xs[i].toFixed(1) + '" cy="' + ys[i].toFixed(1) + '" r="3" fill="#2A9CFF"/>'; }
-            var svgEl = document.getElementById('chartSvg');
             if (svgEl) svgEl.innerHTML = '<svg viewBox="0 0 340 70" preserveAspectRatio="xMidYMid meet"><path d="' + path + '" stroke="#2A9CFF" stroke-width="2" fill="none" stroke-linecap="round"/>' + dots + '</svg>';
-            var datesEl = document.getElementById('chartDates');
-            if (datesEl) datesEl.innerHTML = d.dates.map(function(x){ return '<span>'+x+'</span>'; }).join('');
-            var curEl = document.querySelector('.w-current');
-            if (curEl) curEl.innerHTML = d.cur.split('.')[0] + '<span class="w-unit">.' + d.cur.split('.')[1] + ' kg</span>';
-            var deltaEl = document.querySelector('.w-delta');
-            if (deltaEl) deltaEl.textContent = d.delta;
+            if (datesEl) datesEl.innerHTML = dates.map(function(x){ return '<span>' + x + '</span>'; }).join('');
+            setCur(cur);
+            if (deltaEl){ deltaEl.style.display = ''; deltaEl.textContent = (delta > 0 ? '+' : '') + delta; }
+            if (periodEl) periodEl.textContent = '较首记 ' + (delta > 0 ? '↑' : (delta < 0 ? '↓' : '→'));
         };
         function initHealthTabs() {
+            if (window.__htTabsBound){ window.drawChart('day'); return; }   // 2.0：守卫——原先每次进健康页重复绑一层监听
+            window.__htTabsBound = true;
             document.querySelectorAll('.ct-tab').forEach(function(t) {
                 t.addEventListener('click', function() {
                     document.querySelectorAll('.ct-tab').forEach(function(x) { x.classList.remove('on'); });
@@ -2894,26 +2892,108 @@ body {
             window.drawChart('day');
         }
 
+        // ── 健康页今日指标（2.0：真实打卡数据） ──
+        window.renderHealthToday = function(){
+            var done = tdWorkouts.filter(function(w){ return w.done && w.date === TD_TODAY(); });
+            var kcal = 0, dur = 0;
+            done.forEach(function(w){ kcal += (w.kcal || 0); dur += (w.dur || 0); });
+            var e = function(id){ return document.getElementById(id); };
+            if (e('htKcal')) e('htKcal').textContent = Math.round(kcal).toLocaleString();
+            if (e('htMeta')) e('htMeta').textContent = (new Date().getMonth() + 1) + '月' + new Date().getDate() + '日 · 已完成 ' + done.length + ' 项训练';
+            if (e('htDur')) e('htDur').textContent = Math.round(dur);
+            if (e('htDone')) e('htDone').textContent = done.length;
+        };
+
+        // ── 饮食记录（2.0：手动录入；网页拿不到手机饮食数据，此处为唯一真实来源） ──
+        window.renderDiet = function(){
+            var today = TD_TODAY();
+            var arr = STORE.get('diet', []).filter(function(r){ return r.date === today; });
+            var din = 0; arr.forEach(function(r){ din += (r.kcal || 0); });
+            var done = tdWorkouts.filter(function(w){ return w.done && w.date === today; });
+            var dout = 0; done.forEach(function(w){ dout += (w.kcal || 0); });
+            var fmt = function(v){ return Math.round(v).toLocaleString(); };
+            var e = function(id){ return document.getElementById(id); };
+            if (e('dietIn')) e('dietIn').innerHTML = fmt(din) + '<span class="ds-unit">kcal</span>';
+            if (e('dietOut')) e('dietOut').innerHTML = fmt(dout) + '<span class="ds-unit">kcal</span>';
+            if (e('dietLeft')) e('dietLeft').innerHTML = fmt(din - dout) + '<span class="ds-unit">kcal</span>';
+            var box = e('dietMeals');
+            if (box){
+                if (!arr.length){
+                    box.innerHTML = '<div style="padding:14px 4px;text-align:center;color:#9A9AA3;font-size:12px;">今天还没有饮食记录 · 网页拿不到手机饮食数据，请在下方手动记录</div>';
+                } else {
+                    box.innerHTML = arr.map(function(r){
+                        return '<div class="dm-row"><div class="dm-icon" style="background:rgba(167,139,250,.18);"></div><div class="dm-info"><div class="dm-name">' + window.__esc(r.meal) + '</div><div class="dm-time">' + window.__esc(r.time || '') + '</div></div><div class="dm-kcal">' + (r.kcal || 0) + '</div></div>';
+                    }).join('');
+                }
+            }
+        };
+        window.addDiet = function(){
+            var inp = document.getElementById('dietKcalIn');
+            var meal = document.getElementById('dietMeal');
+            var v = inp ? parseInt(inp.value, 10) : NaN;
+            if (!v || v <= 0){ window.showToast('请填写摄入千卡数'); return; }
+            var arr = STORE.get('diet', []);
+            var n = new Date(); var pad = function(x){ return (x < 10 ? '0' : '') + x; };
+            arr.push({ date: TD_TODAY(), meal: meal ? meal.value : '加餐', kcal: v, time: pad(n.getHours()) + ':' + pad(n.getMinutes()) });
+            STORE.set('diet', arr.slice(-200));
+            if (inp) inp.value = '';
+            window.showToast('已记录 ' + (meal ? meal.value : '') + ' ' + v + ' kcal');
+            renderDiet();
+            if (window.__syncPush) window.__syncPush();
+        };
+
         function afterPageLoad(tab) {
             if (tab === 'health') { setTimeout(initHealthTabs, 100); }
         }
 
-        // ── Profile page init ──
+        // ── Profile page init（2.0：真实当月月历 + 真实统计 + 登录态头部） ──
         function renderProfileCalendar() {
-            const grid = document.getElementById('miniCalendar');
+            var grid = document.getElementById('miniCalGrid');
             if (!grid) return;
-            const totalDays = 31;
-            const activeDays = [20, 21, 23, 25, 26];
-            let html = '';
-            for (let d = 1; d <= totalDays; d++) {
-                const isActive = activeDays.includes(d);
-                const isToday = d === 26;
-                let cls = 'cal-day';
-                if (isToday) cls += ' today';
-                else if (isActive) cls += ' active';
-                html += `<div class="${cls}" onclick="window.showToast('7月${d}日 · ${isActive?'有训练记录':'暂无训练'}')">${d}</div>`;
+            var n = new Date();
+            var y = n.getFullYear(), m = n.getMonth();
+            var ym = y + '-' + TD_PAD(m + 1) + '-';
+            var doneSet = {};
+            tdWorkouts.forEach(function(w){ if (w.done && w.date && w.date.indexOf(ym) === 0){ var dd = parseInt(w.date.slice(8), 10); doneSet[dd] = (doneSet[dd] || 0) + 1; } });
+            var title = document.getElementById('miniCalMonth');
+            if (title) title.textContent = (m + 1) + '月';
+            var firstDay = new Date(y, m, 1).getDay();   // 0=周日
+            var lead = (firstDay + 6) % 7;               // 周一开头
+            var days = new Date(y, m + 1, 0).getDate();
+            var prevDays = new Date(y, m, 0).getDate();
+            var today = n.getDate();
+            var html = '';
+            for (var p = lead - 1; p >= 0; p--) html += '<span class="d dim">' + (prevDays - p) + '</span>';
+            for (var d = 1; d <= days; d++){
+                var cls = 'd' + (doneSet[d] ? ' tr' : '') + (d === today ? ' today' : '');
+                html += '<span class="' + cls + '" onclick="window.showToast(\'' + (m + 1) + '月' + d + '日 · ' + (doneSet[d] ? '完成 ' + doneSet[d] + ' 项训练' : '暂无训练记录') + '\')">' + d + '</span>';
             }
+            var tail = (7 - (lead + days) % 7) % 7;
+            for (var t = 1; t <= tail; t++) html += '<span class="d dim">' + t + '</span>';
             grid.innerHTML = html;
+        }
+        function renderProfileStats() {
+            var e = function(id){ return document.getElementById(id); };
+            var doneAll = tdWorkouts.filter(function(w){ return w.done; });
+            var now = new Date();
+            var mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)); // 本周一
+            var ym = mon.getFullYear() + '-' + TD_PAD(mon.getMonth() + 1) + '-' + TD_PAD(mon.getDate());
+            var week = 0, durSum = 0;
+            doneAll.forEach(function(w){
+                if (w.date && w.date >= ym) week++;
+                durSum += (w.dur || 0);
+            });
+            if (e('stWeek')) e('stWeek').textContent = week + '/7';
+            if (e('stAvg')) e('stAvg').textContent = (doneAll.length && durSum) ? Math.round(durSum / doneAll.length) + 'min' : '--';
+            if (e('stTotal')) e('stTotal').textContent = doneAll.length;
+        }
+        function renderProfileHead() {
+            var el = document.getElementById('hmodLv');
+            if (!el) return;
+            try {
+                var s = JSON.parse(localStorage.getItem('gorun_session') || 'null');
+                el.textContent = (s && s.email) ? (s.email + ' · 云端同步已开启') : '本地模式 · 登录后多端同步';
+            } catch(e){ el.textContent = '本地模式 · 登录后多端同步'; }
         }
 
         // ── Global toast ──
@@ -2945,7 +3025,8 @@ body {
                 el.classList.add('removing');
                 setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 300);
             }
-            tdWorkouts.push({ name: name, meta: meta, type: type });
+            var pd = window.__tdParseMeta(meta);   // 2.0：推荐位也带 date/kcal/dur/dist，进度环统计真实值
+            tdWorkouts.push({ name: name, meta: meta, type: type, date: TD_TODAY(), done: false, kcal: pd.kcal, dur: pd.dur, dist: pd.dist, doneAt: null });
             tdRenderList();
             tdUpdateProgress();
             saveWorkouts();
@@ -3026,30 +3107,21 @@ body {
             window.showToast('已移除照片');
         };
         renderPhotoSlots();
-        (function(){
-          document.querySelectorAll('#advSheet input, #advSheet select').forEach(function(inp){
-            inp.addEventListener('focus', function(){ try { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(e){ inp.scrollIntoView(); } });
-          });
-        })();
+        // 2.0：advSheet 死链已删（无入口的第三套进阶数据 UI），其输入聚焦辅助一并移除
         window.autoFillAdv = function(){
-            // 今日页消耗
-            var kcal = document.getElementById('kcalNum');
-            if (kcal) document.getElementById('advKcal').value = kcal.textContent.replace(/[^0-9]/g, '');
-            // 健康页身体数据（体脂率 / 肌肉量 → HBM / 体重）
-            var fat = '', muscle = '';
-            document.querySelectorAll('#healthPage .metric').forEach(function(mt){
-                var lbl = mt.querySelector('.label');
-                var val = mt.querySelector('.value');
-                if (!lbl || !val) return;
-                var t = lbl.textContent;
-                if (t.indexOf('体脂') > -1) fat = val.textContent;
-                else if (t.indexOf('肌肉') > -1) muscle = val.textContent;
-            });
-            var wEl = document.querySelector('#healthPage .w-current');
-            var weight = wEl ? (wEl.textContent.match(/[0-9.]+/) || [''])[0] : '';
-            if (fat) document.getElementById('advFat').value = fat;
-            if (muscle) document.getElementById('advHbm').value = muscle;
-            if (weight) document.getElementById('advWeight').value = weight;
+            // 2.0 修复：原来找 #healthPage .metric（元素不存在，自动导入永远导了个寂寞）——
+            // 现在从真实数据导入：今日训练消耗 + 最近一次身体记录（体重/体脂/HBM）
+            var kcalEl = document.getElementById('kcalNum');
+            if (kcalEl) document.getElementById('advKcal').value = (kcalEl.textContent || '').replace(/[^0-9]/g, '');
+            var bm = STORE.get('bodyMetrics', []);
+            var last = bm.length ? bm[bm.length - 1] : null;
+            var hit = 0;
+            if (last){
+                if (last.weight){ document.getElementById('advWeight').value = last.weight; hit++; }
+                if (last.fat){ document.getElementById('advFat').value = last.fat; hit++; }
+                if (last.hbm){ document.getElementById('advHbm').value = last.hbm; hit++; }
+            }
+            window.showToast(last ? ('已导入今日消耗 + 上次身体数据 ' + hit + ' 项') : '已导入今日消耗 · 暂无历史身体数据，体重请手填');
             // 导入完成自动收起下拉
             var d = document.getElementById('advDropdown');
             var g = document.querySelector('.adv-glass');
@@ -3064,7 +3136,7 @@ body {
             var ph = document.getElementById('smPhoto');
             if (!ph) return;
             if (!pubPhotos || pubPhotos.length === 0){
-                ph.innerHTML = '<span class="sm-emoji">🏋️</span><span class="sm-count"></span>';
+                ph.innerHTML = '<span class="sm-emoji"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#C9A8F5" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v12M17.5 6.5v12M3.5 9v6M20.5 9v6M6.5 12.5h11"/></svg></span><span class="sm-count"></span>';
                 return;
             }
             if (i < 0) i = pubPhotos.length - 1;
@@ -3084,13 +3156,17 @@ body {
             var d = new Date();
             var dm = document.getElementById('smDate');
             if (dm) dm.textContent = (d.getMonth() + 1) + '月' + d.getDate() + '日';
+            // 2.0：真实统计（今天已完成条目），不再用 完成数×8 之类的假公式
+            var _done = tdWorkouts.filter(function(x){ return x.done && x.date === TD_TODAY(); });
+            var _kcal = 0, _dur = 0;
+            _done.forEach(function(x){ _kcal += (x.kcal || 0); _dur += (x.dur || 0); });
             var acts = document.getElementById('smActs');
-            if (acts) acts.textContent = (tdCompleted ? tdCompleted.length : 0) + ' 个';
+            if (acts) acts.textContent = _done.length + ' 个';
             var kcal = document.getElementById('kcalNum');
             var sk = document.getElementById('smKcal');
             if (sk) sk.textContent = (kcal ? kcal.textContent : '0') + ' kcal';
             var dur = document.getElementById('smDur');
-            if (dur) dur.textContent = Math.round((tdCompleted ? tdCompleted.length : 0) * 8) + ' 分钟';
+            if (dur) dur.textContent = Math.round(_dur) + ' 分钟';
             document.getElementById('summaryModal').classList.add('open');
         };
         // 大图左右滑动（触屏 + 鼠标拖）
@@ -3120,6 +3196,15 @@ body {
             var kcal = (document.getElementById('smKcal') || {}).textContent || '';
             var acts = (document.getElementById('smActs') || {}).textContent || '';
             var dur = (document.getElementById('smDur') || {}).textContent || '';
+            // 2.0：进阶数据（体重/体脂/HBM）随发布入库 → 喂健康页体重趋势曲线
+            try {
+                var _bmR = { date: TD_TODAY() };
+                var _w = document.getElementById('advWeight'), _f = document.getElementById('advFat'), _h = document.getElementById('advHbm');
+                if (_w && _w.value) _bmR.weight = parseFloat(_w.value) || 0;
+                if (_f && _f.value) _bmR.fat = parseFloat(_f.value) || 0;
+                if (_h && _h.value) _bmR.hbm = parseFloat(_h.value) || 0;
+                if (_bmR.weight || _bmR.fat || _bmR.hbm) window.__bmUpsert(_bmR);
+            } catch(e){}
             var logs = STORE.get('logs', []);
             logs.unshift({ id: Date.now(), text: text, mood: mood, kcal: kcal, acts: acts, dur: dur, time: Date.now(), photos: (typeof pubPhotos !== 'undefined' ? pubPhotos.slice() : []) });
             STORE.set('logs', logs.slice(0, 300));
@@ -3128,13 +3213,18 @@ body {
             if (typeof renderLogWall === 'function') renderLogWall();
         };
         // ── 个人页：训练日志瀑布流（J2 小红书式） ──
-        var MOOD_META = {
-          '训练完成': { emoji: '💪', grad: 'linear-gradient(160deg,#FFE9FB,#FFB6F6)' },
-          '有氧打卡': { emoji: '🏃', grad: 'linear-gradient(160deg,#E3F5FF,#BDE7FF)' },
-          '拉伸放松': { emoji: '🧘', grad: 'linear-gradient(160deg,#EAF9FF,#CFF6E8)' },
-          '突破自我': { emoji: '🎉', grad: 'linear-gradient(160deg,#F5FFE3,#E6FFB8)' }
+        // 2.0：HTML 转义助手——日志文本/标题/封面名等拼 HTML 前一律过 esc（防 XSS）
+        window.__esc = function(s){
+            return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         };
-        var MOOD_DEFAULT = { emoji: '🏋️', grad: 'linear-gradient(160deg,#F3EFFF,#E0D5FF)' };
+        // 2.0：心情封面图标 emoji→SVG（视觉规矩：禁 emoji 图标）；svg 复用线条风格，stroke 用品牌紫
+        var MOOD_META = {
+          '训练完成': { emoji: '💪', svg: '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#C9A8F5" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 6.5v12M17.5 6.5v12M3.5 9v6M20.5 9v6M6.5 12.5h11"/></svg>', grad: 'linear-gradient(160deg,#FFE9FB,#FFB6F6)' },
+          '有氧打卡': { emoji: '🏃', svg: '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#8FB6F0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.5" cy="4.5" r="1.8"/><path d="M4 20l4-3 2-4 3 2 4 1M9.5 13l1-4.5 4 1.5 3.5-1"/></svg>', grad: 'linear-gradient(160deg,#E3F5FF,#BDE7FF)' },
+          '拉伸放松': { emoji: '🧘', svg: '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#7FCBA4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-2.5-8-6 2.5 0 5 1 8 3 3-2 5.5-3 8-3 0 3.5-3 6-8 6z"/><circle cx="12" cy="7" r="2.5"/></svg>', grad: 'linear-gradient(160deg,#EAF9FF,#CFF6E8)' },
+          '突破自我': { emoji: '🎉', svg: '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#E0B23E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 6.9 7.3.2-5.8 4.4 2.1 7-6-4.2-6 4.2 2.1-7L2.3 10l7.3-.2z"/></svg>', grad: 'linear-gradient(160deg,#F5FFE3,#E6FFB8)' }
+        };
+        var MOOD_DEFAULT = { emoji: '🏋️', svg: '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#B99AF8" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><path d="M12 8v8M8 12h8"/></svg>', grad: 'linear-gradient(160deg,#F3EFFF,#E0D5FF)' };
         var WALL_MOCK = [
           { mood: '训练完成', text: '核心日 · 卷腹4组+平板支撑' },
           { mood: '有氧打卡', text: '晨跑 5 公里 · 配速 6分20秒' },
@@ -3147,12 +3237,7 @@ body {
           var wall = document.getElementById('logWall');
           var cnt = document.getElementById('wallCount');
           if (!wall) return;
-          var loggedIn = (typeof window.__isLoggedIn === 'function') ? window.__isLoggedIn() : false;
-          if (!loggedIn){
-            if (cnt) cnt.textContent = '共 0 条';
-            wall.innerHTML = '<div class="J2-empty">登录后可查看训练日志</div>';
-            return;
-          }
+          // 2.0 修复：撤登录墙——日志本来就存在本机，未登录也展示（顶部提示可登录云同步）
           var logs = STORE.get('logs', []) || [];
           var shown = logs.filter(function(g){ return !g.hidden; });
           if (cnt) cnt.textContent = '共 ' + shown.length + ' 条';
@@ -3160,11 +3245,11 @@ body {
             wall.innerHTML = '<div class="J2-empty">还没有训练日志 · 去发布页记录第一条吧</div>';
             return;
           }
-          wall.innerHTML = shown.map(function(g, i){
+          wall.innerHTML = shown.map(function(g){
             var meta = MOOD_META[g.mood] || MOOD_DEFAULT;
-            var title = (g.text || '记录了一次训练').split('\n')[0];
-            var ph = (g.photos && g.photos.length) ? '<img src="' + g.photos[0] + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">' : meta.emoji;
-            return '<div class="J2-card" onclick="window.openLogDetail(' + i + ')"><div class="pic" style="background:' + meta.grad + ';">' + ph + '</div><div class="bd"><div class="t">' + title + '</div></div></div>';
+            var title = window.__esc((g.text || '记录了一次训练').split('\n')[0]);
+            var ph = (g.photos && g.photos.length) ? '<img src="' + window.__esc(g.photos[0]) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">' : '<span style="width:34px;height:34px;display:block;margin:0 auto;">' + (meta.svg || meta.emoji) + '</span>';
+            return '<div class="J2-card" onclick="window.openLogDetail(' + g.id + ')"><div class="pic" style="background:' + meta.grad + ';">' + ph + '</div><div class="bd"><div class="t">' + title + '</div></div></div>';
           }).join('');
         };
         renderLogWall();
@@ -3180,10 +3265,13 @@ body {
         function fmtLogDate(t){ var d = new Date(t || Date.now()); return (d.getMonth()+1) + '月' + d.getDate() + '日 · 星期' + '日一二三四五六'[d.getDay()]; }
         function fmtLogTime(t){ var d = new Date(t || Date.now()); var p = function(n){ return n < 10 ? '0' + n : n; }; return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日 ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
         function fmtLogHM(t){ var d = new Date(t || Date.now()); var p = function(n){ return n < 10 ? '0' + n : n; }; return p(d.getHours()) + ':' + p(d.getMinutes()); }
-        window.openLogDetail = function(i){
+        window.openLogDetail = function(id){
           var logs = STORE.get('logs', []) || [];
-          var g = logs[i]; if (!g) return;
-          LGD.idx = i; LGD.logs = logs;
+          // 2.0 修复：按 id 查找（原先瀑布流传 shown 下标、这里按全量下标取，删过日志/隐藏后必错位）
+          var gi = -1;
+          for (var k = 0; k < logs.length; k++){ if (logs[k].id === id){ gi = k; break; } }
+          var g = gi > -1 ? logs[gi] : null; if (!g) return;
+          LGD.idx = gi; LGD.logs = logs;
           var meta = MOOD_META[g.mood] || MOOD_DEFAULT;
           var svg = (LGD_META[g.mood] || {}).svg || LGD_DEFAULT;
           var photos = g.photos || [];
@@ -3296,7 +3384,7 @@ body {
         // ── Add course from follow page to today ──
         window.addCourseToToday = function(name, category, detail, kcal) {
             const isCardio = category === 'cardio';
-            tdWorkouts.push({ name: name, meta: detail, type: isCardio ? '有氧' : '力量' });
+            tdWorkouts.push({ name: name, meta: detail, type: isCardio ? '有氧' : '力量', date: TD_TODAY(), done: false, kcal: parseInt(kcal) || 0, dur: 0, dist: 0, doneAt: null }); // 2.0：跟练卡路里用课程标注值
             tdRenderList();
             tdUpdateProgress();
             saveWorkouts();
@@ -3361,8 +3449,11 @@ body {
             return;
           }
           row.innerHTML = recs.map(function(r){
-            var cover = r.pic ? 'background-image:url(' + r.pic + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#FFE9FB,#FFB6F6);';
-            return '<div class="recent-card" onclick="window.openVideoPlayer(\'' + r.bvid + '\',\'' + r.title + '\')"><div class="rc-cover" style="' + cover + '"></div><div class="rc-name">' + r.title + '</div><div class="rc-sub">' + fmtRecent(r.time) + '</div></div>';
+            // 2.0 修复：标题来自本地存储但可能被同步数据污染——bvid 白名单校验 + title 过 esc，防 XSS
+            var bv = /^[A-Za-z0-9]+$/.test(r.bvid || '') ? r.bvid : '';
+            if (!bv) return '';
+            var cover = r.pic ? 'background-image:url(' + window.__esc(r.pic) + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#FFE9FB,#FFB6F6);';
+            return '<div class="recent-card" data-bv="' + bv + '" data-t="' + window.__esc(r.title) + '" onclick="window.openVideoPlayer(this.dataset.bv, this.dataset.t)"><div class="rc-cover" style="' + cover + '"></div><div class="rc-name">' + window.__esc(r.title) + '</div><div class="rc-sub">' + fmtRecent(r.time) + '</div></div>';
           }).join('');
         }
         function recRecent(bvid, title){
@@ -3432,7 +3523,7 @@ body {
         }
 
 
-        // 鈹€鈹€ Follow page v2 (sync from demo) 鈹€鈹€
+        // ── Follow page v2 (sync from demo) ──
         var courses = [
             { name:'帕梅拉｜10分钟下腹部训练', bv:'BV1rt4y1k7Wq', cat:'core', dur:'10:00', hot:'3714万', level:'中等', fav:true, kcal:120, equip:'瑜伽垫', moves:'卷腹 平板支撑 俄罗斯转体 仰卧举腿 侧平板 登山跑 交替触踝 反向卷腹 V字收腹 腹部拉伸', grad:'linear-gradient(135deg,#FFE9FB,#FFB6F6)', pic:'img/cover/1.jpg' },
             { name:'周六野｜10分钟超燃脂HIIT', bv:'BV1Yx411v7Z1', cat:'hiit', dur:'13:00', hot:'2957万', level:'高强度', fav:false, kcal:280, equip:'瑜伽垫', moves:'开合跳 波比跳 高抬腿 登山跑 深蹲跳 平板支撑 俄罗斯转体 俯身登山 交替弓步 卷腹 俯卧撑 拉伸', grad:'linear-gradient(135deg,#EDE5FC,#C9B8F5)', pic:'img/cover/2.jpg' },
@@ -3502,16 +3593,20 @@ body {
                             return;
                         }
                         var rows = list.map(function(v){
-                            var durTxt = v.duration ? '<span class="dur">' + v.duration + '</span>' : '';
-                            var pic = v.pic ? 'background-image:url(' + v.pic + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#C9B8F5,#E86FB9);';
-                            var sub = '<span>' + v.author + '</span>';
+                            // 2.0 修复：B 站数据来自第三方 Worker，标题/作者/封面一律 esc + bvid 白名单，防 XSS
+                            var bvid = /^[A-Za-z0-9]+$/.test(v.bvid || '') ? v.bvid : '';
+                            if (!bvid) return '';
+                            var picOk = /^https:\/\//.test(v.pic || '') ? v.pic : '';
+                            var durTxt = v.duration ? '<span class="dur">' + window.__esc(v.duration) + '</span>' : '';
+                            var pic = picOk ? 'background-image:url(' + window.__esc(picOk) + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#C9B8F5,#E86FB9);';
+                            var sub = '<span>' + window.__esc(v.author) + '</span>';
                             if (v.play && v.play !== 0 && v.play !== '0'){
                                 var pn = parseInt(v.play, 10);
-                                sub += '<span>' + (isNaN(pn) ? v.play : (pn > 9999 ? (pn / 10000).toFixed(1) + '万' : pn)) + ' 播放</span>';
+                                sub += '<span>' + window.__esc(isNaN(pn) ? String(v.play) : (pn > 9999 ? (pn / 10000).toFixed(1) + '万' : String(pn))) + ' 播放</span>';
                             }
-                            return '<div class="course-item bili-item" onclick="window.openVideoPlayer(\'' + v.bvid + '\',\'' + v.title.replace(/'/g, '') + '\')">' +
+                            return '<div class="course-item bili-item" data-bv="' + bvid + '" data-t="' + window.__esc(v.title) + '" onclick="window.openVideoPlayer(this.dataset.bv, this.dataset.t)">' +
                                 '<div class="c-thumb" style="' + pic + '"><div class="mini-play"></div>' + durTxt + '</div>' +
-                                '<div class="c-info"><div class="c-name">' + v.title + '</div>' +
+                                '<div class="c-info"><div class="c-name">' + window.__esc(v.title) + '</div>' +
                                 '<div class="c-sub">' + sub + '</div></div>' +
                                 '<div class="c-acts"><button class="mini-btn mini-go" style="pointer-events:none">播放</button></div>' +
                             '</div>';
@@ -3569,16 +3664,20 @@ body {
                         }
                         if (st) st.textContent = '搜到 ' + list.length + ' 条';
                         box.innerHTML = list.map(function(v){
-                            var durTxt = v.duration ? '<span class="dur">' + v.duration + '</span>' : '';
-                            var pic = v.pic ? 'background-image:url(' + v.pic + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#C9B8F5,#E86FB9);';
-                            var sub = '<span>' + v.author + '</span>';
+                            // 2.0 修复：同 biliSearch——第三方数据 esc + bvid 白名单，防 XSS
+                            var bvid = /^[A-Za-z0-9]+$/.test(v.bvid || '') ? v.bvid : '';
+                            if (!bvid) return '';
+                            var picOk = /^https:\/\//.test(v.pic || '') ? v.pic : '';
+                            var durTxt = v.duration ? '<span class="dur">' + window.__esc(v.duration) + '</span>' : '';
+                            var pic = picOk ? 'background-image:url(' + window.__esc(picOk) + ');background-size:cover;background-position:center;' : 'background:linear-gradient(135deg,#C9B8F5,#E86FB9);';
+                            var sub = '<span>' + window.__esc(v.author) + '</span>';
                             if (v.play && v.play !== 0 && v.play !== '0'){
                                 var pn = parseInt(v.play, 10);
-                                sub += '<span>' + (isNaN(pn) ? v.play : (pn > 9999 ? (pn / 10000).toFixed(1) + '万' : pn)) + ' 播放</span>';
+                                sub += '<span>' + window.__esc(isNaN(pn) ? String(v.play) : (pn > 9999 ? (pn / 10000).toFixed(1) + '万' : String(pn))) + ' 播放</span>';
                             }
-                            return '<div class="sp-card" onclick="window.openVideoPlayer(\'' + v.bvid + '\',\'' + v.title.replace(/'/g, '') + '\')">' +
+                            return '<div class="sp-card" data-bv="' + bvid + '" data-t="' + window.__esc(v.title) + '" onclick="window.openVideoPlayer(this.dataset.bv, this.dataset.t)">' +
                                 '<div class="sp-thumb" style="' + pic + '"><div class="mini-play"></div>' + durTxt + '</div>' +
-                                '<div class="sp-info"><div class="sp-name">' + v.title + '</div>' +
+                                '<div class="sp-info"><div class="sp-name">' + window.__esc(v.title) + '</div>' +
                                 '<div class="sp-sub">' + sub + '</div></div>' +
                                 '<span class="sp-go">播放</span>' +
                             '</div>';
@@ -3598,6 +3697,9 @@ body {
         window.closeSearchPage = function(){ window.__closeTop(); };
         var detailIdx = -1;
         var _layerStack = [];
+        var _navByCode = false;   // 2.0 修复：程序化 history.back 标志。closeTop 里的 back() 会异步触发 popstate，
+                                  // 原版 popstate 处理器不区分来源，又 pop 一层执行 → 每次程序化关层都连环弹两层
+                                  //（startCourse 自毁、关视频连带关详情、关搜索连带弹层，全是这个根因）
         window.__openLayer = function(fn){
           _layerStack.push(fn);
           try { history.pushState({}, ''); } catch(e){}
@@ -3606,12 +3708,14 @@ body {
           if (_layerStack.length){
             var fn = _layerStack.pop();
             try { fn(); } catch(e){}
+            _navByCode = true;
             try { history.back(); } catch(e){}
             return true;
           }
           return false;
         };
         window.addEventListener('popstate', function(){
+          if (_navByCode){ _navByCode = false; return; }   // 程序化 back 只消耗历史，不再弹层
           if (_layerStack.length){
             var fn = _layerStack.pop();
             try { fn(); } catch(e){}
@@ -3663,8 +3767,10 @@ body {
         window.startCourse = function(){
             if (detailIdx < 0) return;
             var c = courses[detailIdx];
-            window.openVideoPlayer(c.bv, c.name);
+            // 2.0 修复（P0-3）：必须先关详情层再开播放层。原顺序反了——openVideoPlayer 先压栈，
+            // closeDetail(=__closeTop) 弹掉的是刚打开的播放层，popstate 再弹一层 → 播放页自动关闭。
             window.closeDetail();
+            window.openVideoPlayer(c.bv, c.name);
         };
         document.getElementById('catChips').addEventListener('click', function(e){
             var chip = e.target.closest('.chip'); if (!chip) return;
@@ -3682,7 +3788,8 @@ body {
         });
         window.renderCourses();
         // ── Publish page ──
-        var pubAdvOn = false;
+        // 2.0：pubAdvOn 变量已随 togglePublishAdv 死链删除
+        window.closePubLog = null; window.doPubPost = null; window.genPubLog = null; // 占位防旧引用（唯一入口 pubAdvModal 已删）
         window.mood = function(el) {
             var wasOn = el.classList.contains('on');
             // 只切换发布页的话题 chips
@@ -3701,75 +3808,24 @@ body {
                 if (pub.oninput) pub.oninput();
             }
         };
-        window.closeAdvSheet = function() { document.getElementById('advSheet').classList.remove('show'); };
-        window.genLog = function() {
-            window.closeAdvSheet();
-            var t = document.getElementById('pubText') ? document.getElementById('pubText').value.trim() : '';
-            document.getElementById('pvText').textContent = t ? t.slice(0, 40) : '今天练了腹部核心，状态不错！坚持第 21 天...';
-            document.getElementById('logSheet').classList.add('show');
-        };
-        window.closeLogSheet = function() { document.getElementById('logSheet').classList.remove('show'); };
-        window.togglePublishAdv = function() {
-            pubAdvOn = !pubAdvOn;
-            document.getElementById('pubSwitchTrack').classList.toggle('on', pubAdvOn);
-            document.getElementById('pubSwitchThumb').classList.toggle('on', pubAdvOn);
-            if (pubAdvOn) { document.getElementById('pubAdvModal').classList.add('show'); }
-            else { document.getElementById('pubAdvModal').classList.remove('show'); }
-        };
-        window.closePubAdv = function() { document.getElementById('pubAdvModal').classList.remove('show'); };
-        window.autoFillPub = function() {
-            document.getElementById('pfWeight').value = '72.6';
-            document.getElementById('pfFat').value = '15.2';
-            document.getElementById('pfKcal').value = '320';
-            document.getElementById('pfHbm').value = '42.5';
-            document.getElementById('pfMuscle').value = '32.8';
-            document.getElementById('pfVisceral').value = '6.5';
-            window.showToast('已导入今日数据（可手动修改）');
-        };
-        window.genPubLog = function() {
-            var d = new Date();
-            document.getElementById('plpDate').textContent = '📅 ' + d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日';
-            var textEl = document.querySelector('#publishPage .pub-text-input');
-            document.getElementById('plpText').textContent = (textEl && textEl.value.trim()) || '今天训练状态不错，继续加油～';
-            var fields = [
-                { id:'pfWeight', label:'⚖️ ', unit:' kg', cls:'c1' },
-                { id:'pfFat', label:'🧴 体脂 ', unit:'%', cls:'c2' },
-                { id:'pfKcal', label:'🔥 消耗 ', unit:'kcal', cls:'c3' },
-                { id:'pfHbm', label:'💪 HBM ', unit:' kg', cls:'c1' },
-                { id:'pfMuscle', label:'🦴 骨骼肌 ', unit:' kg', cls:'c2' },
-                { id:'pfVisceral', label:'🫄 内脏脂肪 ', unit:'', cls:'c3' }
-            ];
-            var hasAny = false, html = '';
-            fields.forEach(function(f) {
-                var el = document.getElementById(f.id);
-                var val = el ? el.value.trim() : '';
-                if (val) { hasAny = true; html += '<span class="log-chip ' + f.cls + '">' + f.label + val + f.unit + '</span>'; }
-            });
-            if (!hasAny) { window.showToast('请至少填写一项数据'); return; }
-            document.getElementById('plogRows').innerHTML = html;
-            window.closePubAdv();
-            setTimeout(function() { document.getElementById('pubLogOverlay').classList.add('show'); }, 300);
-        };
-        window.closePubLog = function() { document.getElementById('pubLogOverlay').classList.remove('show'); };
-        window.doPubPost = function() {
-            window.closePubLog();
-            var t = (document.getElementById('pvText') || {}).textContent || '';
-            var t2 = (document.getElementById('pubText') || {}).value || '';
-            var text = (t || t2 || '记录了一次训练').trim();
-            var moodEl = document.querySelector('#publishPage .chip.on');
-            var mood = moodEl ? moodEl.textContent.trim() : '';
-            var kcal = (document.getElementById('kcalNum') || {}).textContent || '';
-            var acts = '';
-            try { acts = (typeof tdCompleted !== 'undefined' && tdCompleted) ? tdCompleted.length + ' 个' : ''; } catch(e){}
-            var logs = STORE.get('logs', []);
-            logs.unshift({ id: Date.now(), text: text, mood: mood, kcal: kcal, acts: acts, dur: '', time: Date.now(), photos: (typeof pubPhotos !== 'undefined' ? pubPhotos.slice() : []) });
-            STORE.set('logs', logs.slice(0, 300));
-            window.showToast('✅ 已发布到训练日志');
-            if (typeof renderLogWall === 'function') renderLogWall();
-          };
+        // 2.0：以下死链已删——closeAdvSheet/genLog/closeLogSheet/togglePublishAdv/closePubAdv/autoFillPub/
+        // genPubLog/closePubLog/doPubPost 及 pubAdvOn（pubAdvModal/pubLogOverlay/advSheet/logSheet 四块死 HTML 一并移除）。
+        // 发布唯一路径：发布页「发布/生成训练日志」→ openSummary → summaryModal → confirmPublish。
+        // 2.0：genPubLog/closePubLog/doPubPost 死链已删（入口 pubAdvModal 已移除，发布唯一路径见上）
 
         // ── 添加运动弹窗交互 ──
         var _modalTab = 0; // 0=无氧, 1=有氧
+        // 2.0 补回：openModal/closeModal 原由已归档的 js/app.js 提供（审计误判其零引用），
+        // FAB「+」按钮和添加弹窗的关闭按钮都调用它们，现内联补回
+        window.openModal = function() {
+            document.getElementById('actionModal').classList.add('open');
+            if (typeof window.initFloatingModal === 'function') {
+                setTimeout(window.initFloatingModal, 50);
+            }
+        };
+        window.closeModal = function() {
+            document.getElementById('actionModal').classList.remove('open');
+        };
         window.initFloatingModal = function() {
             // tab 切换
             var tabs = document.querySelectorAll('#tabSwitch .tab-label');
@@ -3833,7 +3889,7 @@ body {
                 var w = document.getElementById('sWeight').value;
                 detail = g + '组 × ' + r + '次 × ' + w + 'kg';
                 category = 'strength';
-                kcal = Math.round(g * r * w * 0.04);
+                kcal = Math.round(g * r * w * KCAL_STRENGTH);
                 iconBg = 'rgba(176,248,32,0.50)';
                 iconFill = '#4C6F00';
             } else {
@@ -3843,13 +3899,17 @@ body {
                 var cal = document.getElementById('cCalories').value;
                 detail = dist + ' km · ' + d + '分钟';
                 category = 'cardio';
-                kcal = parseInt(cal) || 300;
+                kcal = parseInt(cal) || 0;   // 2.0：没填就记 0，不再伪造 300
                 iconBg = 'rgba(255,182,246,0.50)';
                 iconFill = '#FA64DC';
             }
-            tdWorkouts.push({ name: name, meta: detail, type: category === 'cardio' ? '有氧' : '力量' });
+            // 2.0 修复：原版 push 后不存盘（刷新即丢），且缺 date/kcal/dur/dist 字段，进度环全是假数据
+            var durN = _modalTab === 0 ? 0 : (parseFloat(d) || 0);
+            var distN = _modalTab === 0 ? 0 : (parseFloat(dist) || 0);
+            tdWorkouts.push({ name: name, meta: detail, type: category === 'cardio' ? '有氧' : '力量', date: TD_TODAY(), done: false, kcal: kcal || 0, dur: durN, dist: distN, doneAt: null });
             tdRenderList();
             tdUpdateProgress();
+            saveWorkouts();
             window.closeModal();
             window.showToast('已添加「' + name + '」到今日运动');
         };
@@ -3871,7 +3931,7 @@ body {
 (function(){
   var SB_URL = 'https://ljzawblcyuwvioazjhiv.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqemF3YmxjeXV3dmlvYXpqaGl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MzY0NDAsImV4cCI6MjEwMjAxMjQ0MH0._osewlf207aS9K78wdDt1EoZbrlIzfcfr2suenWFe4E';
-  var KEYS = ['tdWorkouts', 'tdCompleted', 'recoHidden'];
+  var KEYS = ['tdWorkouts', 'logs', 'recent', 'recoHidden', 'bodyMetrics', 'diet']; // 2.0 修复：logs/recent/bodyMetrics/diet 纳入云同步；tdCompleted 已并入 tdWorkouts 的 done 字段
   var session = null;
   var pushTimer = null;
 
@@ -3888,6 +3948,17 @@ body {
     if (opts.body && typeof opts.body === 'string') opts.headers['Content-Type'] = 'application/json';
     if (opts.body && typeof opts.body !== 'string') { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(opts.body); }
     return fetch(SB_URL + path, opts).then(function(r){
+      // 2.0 修复：token 过期（401）自动用 refresh_token 续期一次并重试，不再静默失败
+      if (r.status === 401 && session && session.refresh && !opts.__retried){
+        return api('/auth/v1/token?grant_type=refresh_token', { method: 'POST', __retried: true, body: { refresh_token: session.refresh } }).then(function(rr){
+          if (rr.ok && rr.body && rr.body.access_token){
+            saveSession(rr.body.access_token, session.email, session.uid, rr.body.refresh_token || session.refresh);
+            var o2 = {}; for (var k in opts) o2[k] = opts[k]; o2.__retried = true;
+            return api(path, o2);
+          }
+          return { ok: false, status: r.status, body: null };
+        });
+      }
       return r.json().then(function(j){ return { ok: r.ok, status: r.status, body: j }; }).catch(function(){ return { ok: r.ok, status: r.status, body: null }; });
     });
   }
@@ -3947,7 +4018,14 @@ body {
     tsSet(k);
     api('/rest/v1/go_run_data?on_conflict=user_id,data_key', {
       method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates' }, // 2.0 修复：缺此头 upsert 全部 409，云端永远停在首份数据
       body: { user_id: session.uid, data_key: k, data: v, updated_at: new Date().toISOString() }
+    }).then(function(r){
+      var st = document.getElementById('acctSyncState');
+      if (st) st.textContent = (r && r.ok) ? '已同步' : '同步失败，进入页面时自动重试';
+    }).catch(function(){
+      var st = document.getElementById('acctSyncState');
+      if (st) st.textContent = '同步失败，进入页面时自动重试';
     });
   }
   function schedulePush(){
@@ -3977,7 +4055,7 @@ body {
         }
       });
       // 云端覆盖后写回内存变量并渲染
-      var w = lsGet('tdWorkouts'); if (w && w.length) { try { tdWorkouts = w; } catch(e){} }
+      var w = lsGet('tdWorkouts'); if (w && w.length) { try { tdWorkouts = (window.__migrateWorkouts || function(x){ return x; })(w); } catch(e){} }
       var d = lsGet('tdCompleted'); if (d && d.length) { try { tdCompleted = d; } catch(e){} }
       applyRecoHidden();
       try { if (typeof tdRenderList === 'function') tdRenderList(); } catch(e){}
@@ -4049,7 +4127,7 @@ body {
   window.acctLogout = function(){
     session = null;
     try { localStorage.removeItem('gorun_session'); } catch(e){}
-    try { localStorage.removeItem('gorun_logs'); } catch(e){}   // 日志属于账号，退出即清
+    // 2.0 修复：不再删除本地日志（原先 logs 从未上云却被当账号数据删除，误触退出=日志蒸发）
     renderAcct();
     if (typeof renderLogWall === 'function') renderLogWall();
   };
@@ -4087,7 +4165,7 @@ body {
 
 <!-- ===== 登录弹窗（G 方案：胶囊大按钮） ===== -->
 <div id="acctModal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:300;background:rgba(20,16,32,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);">
-  <div style="width:310px;background:#fff;border-radius:32px;padding:34px 24px 26px;box-shadow:0 24px 60px rgba(30,20,60,.25);position:relative;">
+  <div style="width:310px;background:#fff;border-radius:32px;padding:34px 24px calc(26px + env(safe-area-inset-bottom));box-shadow:0 24px 60px rgba(30,20,60,.25);position:relative;">
     <button onclick="window.closeAcctModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(120,110,140,.12);color:#6b6b76;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     <div style="text-align:center;font-size:28px;font-weight:800;letter-spacing:-.05em;color:#161722;">GO RUN</div>
     <div style="text-align:center;font-size:12px;color:#9a9aa3;margin:6px 0 22px;">每一步，都被记录</div>
@@ -4107,7 +4185,7 @@ body {
     <button onclick="window.pickPhotoSource('camera')" style="width:100%;height:52px;border:none;background:#fff;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;border-bottom:1px solid rgba(28,28,30,.06);font-family:inherit;">拍照</button>
     <button onclick="window.pickPhotoSource('album')" style="width:100%;height:52px;border:none;background:#fff;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;">相册</button>
   </div>
-  <button onclick="document.getElementById('photoSheet').style.display='none'" style="margin:0 10px 16px;height:48px;border:none;border-radius:18px;background:#fff;font-size:15px;font-weight:600;color:#8E8E93;cursor:pointer;font-family:inherit;">取消</button>
+  <button onclick="document.getElementById('photoSheet').style.display='none'" style="margin:0 10px calc(16px + env(safe-area-inset-bottom));height:48px;border:none;border-radius:18px;background:#fff;font-size:15px;font-weight:600;color:#8E8E93;cursor:pointer;font-family:inherit;">取消</button>
 </div>
 <!-- PWA 2.0: Service Worker 注册（仅 HTTPS/localhost 生效，file:// 打开自动跳过） -->
 <script>

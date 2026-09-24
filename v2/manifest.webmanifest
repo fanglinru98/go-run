@@ -1,7 +1,7 @@
 {
   "name": "GO RUN",
   "short_name": "GO RUN",
-  "description": "记录每日运动，云端同步不丢失",
+  "description": "记录每日运动，登录后云端同步",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
