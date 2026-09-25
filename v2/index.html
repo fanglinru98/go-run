@@ -3890,6 +3890,15 @@ body {
             if (detailIdx < 0) return;
             courses[detailIdx].fav = !courses[detailIdx].fav;
             document.getElementById('detailFav').classList.toggle('on', courses[detailIdx].fav);
+            // 2.1：收藏持久化（本地 + 登录云同步）——以 BV 号为准，不受课程顺序变化影响
+            try {
+                var favs = STORE.get('courseFavs', []) || [];
+                var bv = courses[detailIdx].bv;
+                if (courses[detailIdx].fav){ if (favs.indexOf(bv) < 0) favs.push(bv); }
+                else { favs = favs.filter(function(x){ return x !== bv; }); }
+                STORE.set('courseFavs', favs);
+                if (window.__syncPush) window.__syncPush();
+            } catch(e){}
             window.showToast(courses[detailIdx].fav ? '已收藏' : '已取消收藏');
             window.renderCourses();
         };
@@ -3934,6 +3943,12 @@ body {
             curTab = t.dataset.t;
             window.renderCourses();
         });
+        // 2.1：收藏持久化——本地 gorun_courseFavs（BV 号数组），登录后随 KEYS 云同步
+        window.__applyCourseFavs = function(){
+            var favs = STORE.get('courseFavs', []) || [];
+            courses.forEach(function(c){ c.fav = favs.indexOf(c.bv) > -1; });
+        };
+        window.__applyCourseFavs();
         window.renderCourses();
         // ── Publish page ──
         // 2.0：pubAdvOn 变量已随 togglePublishAdv 死链删除
@@ -4079,7 +4094,7 @@ body {
 (function(){
   var SB_URL = 'https://ljzawblcyuwvioazjhiv.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqemF3YmxjeXV3dmlvYXpqaGl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MzY0NDAsImV4cCI6MjEwMjAxMjQ0MH0._osewlf207aS9K78wdDt1EoZbrlIzfcfr2suenWFe4E';
-  var KEYS = ['tdWorkouts', 'logs', 'recent', 'recoHidden', 'bodyMetrics', 'diet', 'steps']; // 2.0 修复：logs/recent/bodyMetrics/diet/steps 纳入云同步；tdCompleted 已并入 tdWorkouts 的 done 字段
+  var KEYS = ['tdWorkouts', 'logs', 'recent', 'recoHidden', 'bodyMetrics', 'diet', 'steps', 'courseFavs']; // 2.0 修复：logs/recent/bodyMetrics/diet/steps 纳入云同步；tdCompleted 已并入 tdWorkouts 的 done 字段；2.1 加 courseFavs（收藏 BV 号数组）
   var session = null;
   var pushTimer = null;
 
@@ -4208,6 +4223,9 @@ body {
       applyRecoHidden();
       try { if (typeof tdRenderList === 'function') tdRenderList(); } catch(e){}
       try { if (typeof tdUpdateProgress === 'function') tdUpdateProgress(); } catch(e){}
+      // 2.1：收藏云合并后重放（云端 BV 号数组覆盖内存 fav 标记）
+      try { if (typeof window.__applyCourseFavs === 'function') window.__applyCourseFavs(); } catch(e){}
+      try { if (typeof window.renderCourses === 'function') window.renderCourses(); } catch(e){}
       var st = document.getElementById('acctSyncState'); if (st) st.textContent = '已同步';
       // 2.1：合并后跑一次照片云同步对账（补传云端缺失的照片行）
       try { if (window.__photoSyncPending) window.__photoSyncPending(); } catch(e){}
