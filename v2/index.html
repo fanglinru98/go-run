@@ -1868,9 +1868,13 @@ body {
                         <div class="edmeta" id="htMeta">--</div>
                         <div class="ednum"><span class="l">训练时长</span><span class="v"><span id="htDur">0</span><em> min</em></span></div>
                         <div class="ednum"><span class="l">完成训练</span><span class="v"><span id="htDone">0</span><em> 项</em></span></div>
-                        <div class="ednum"><span class="l">今日步数</span><span class="v">--<em> 步</em></span></div>
+                        <div class="ednum"><span class="l">今日步数</span><span class="v"><span id="htSteps">--</span><em> 步</em></span></div>
                         <div class="edline"><i></i></div>
-                        <div class="edmeta" style="margin-top:8px">网页拿不到手机步数/心率（需系统健康授权）· 以上数据来自「今日」页真实打卡</div>
+                        <div class="diet-input" style="margin-top:10px;">
+                            <input type="number" id="stepsInput" placeholder="手动录入今日步数">
+                            <button onclick="window.addSteps()">记录</button>
+                        </div>
+                        <div class="edmeta" style="margin-top:8px">网页拿不到手机/微信运动步数（仅小程序可读）· 以上消耗与训练数据来自「今日」页真实打卡</div>
                     </div>
                 </div>
                 <div class="sec-title" style="font-size:17px;">体重变化</div>
@@ -2794,7 +2798,7 @@ body {
             if (tab === 'health') {
                 document.getElementById('pageContainer').classList.add('hidden');
                 document.getElementById('healthPage').classList.add('active');
-                setTimeout(function(){ initHealthTabs(); renderHealthToday(); renderDiet(); }, 100);
+                setTimeout(function(){ initHealthTabs(); renderHealthToday(); renderDiet(); renderSteps(); }, 100);
                 return;
             }
             if (tab === 'publish') {
@@ -2942,6 +2946,31 @@ body {
             if (window.__syncPush) window.__syncPush();
         };
 
+        // ── 步数手动录入（2.0：H5 拿不到微信运动/系统健康数据，此处为唯一真实来源；随云同步多端一致） ──
+        window.renderSteps = function(){
+            var today = TD_TODAY();
+            var arr = STORE.get('steps', []);
+            var rec = null;
+            for (var i = arr.length - 1; i >= 0; i--){ if (arr[i].date === today){ rec = arr[i]; break; } }
+            var e = document.getElementById('htSteps');
+            if (e) e.textContent = rec ? rec.count.toLocaleString() : '--';
+        };
+        window.addSteps = function(){
+            var inp = document.getElementById('stepsInput');
+            var v = inp ? parseInt(inp.value, 10) : NaN;
+            if (!v || v <= 0){ window.showToast('请填写步数'); return; }
+            var arr = STORE.get('steps', []);
+            var today = TD_TODAY();
+            var found = false;
+            for (var i = 0; i < arr.length; i++){ if (arr[i].date === today){ arr[i].count = v; found = true; break; } }
+            if (!found) arr.push({ date: today, count: v });
+            STORE.set('steps', arr.slice(-400));
+            if (inp) inp.value = '';
+            window.showToast('已记录今日 ' + v.toLocaleString() + ' 步');
+            renderSteps();
+            if (window.__syncPush) window.__syncPush();
+        };
+
         function afterPageLoad(tab) {
             if (tab === 'health') { setTimeout(initHealthTabs, 100); }
         }
@@ -3050,17 +3079,30 @@ body {
         window.renderPhotoSlots = function(){
             var row = document.getElementById('pubPhotosRow');
             if (!row) return;
-            var html = '';
-            pubPhotos.forEach(function(url, i){
-                html += '<div class="pub-photo-slot" style="background:#fff;border-style:solid;">' +
-                          '<img src="' + url + '" alt="照片预览">' +
-                          '<span class="photo-remove" onclick="event.stopPropagation();window.removePhoto(' + i + ')">×</span>' +
-                        '</div>';
+            row.innerHTML = '';
+            // 2.1：引用可能是 photoId（IDB）或 data: base64（回退），统一 __resolvePhoto 异步取图
+            pubPhotos.forEach(function(ref, i){
+                var slot = document.createElement('div');
+                slot.className = 'pub-photo-slot';
+                slot.style.cssText = 'background:#fff;border-style:solid;';
+                var im = document.createElement('img');
+                im.alt = '照片预览';
+                slot.appendChild(im);
+                var rm = document.createElement('span');
+                rm.className = 'photo-remove';
+                rm.textContent = '×';
+                rm.setAttribute('onclick', 'event.stopPropagation();window.removePhoto(' + i + ')');
+                slot.appendChild(rm);
+                row.appendChild(slot);
+                window.__resolvePhoto(ref, function(u){ if (u) im.src = u; });
             });
             if (pubPhotos.length < 3){
-                html += '<div class="pub-photo-slot" onclick="window.clickSlot()"><span style="font-size:22px;color:var(--purple-tint);line-height:1;">+</span><span style="font-size:10px;color:var(--text-3);">照片</span></div>';
+                var add = document.createElement('div');
+                add.className = 'pub-photo-slot';
+                add.setAttribute('onclick', 'window.clickSlot()');
+                add.innerHTML = '<span style="font-size:22px;color:var(--purple-tint);line-height:1;">+</span><span style="font-size:10px;color:var(--text-3);">照片</span>';
+                row.appendChild(add);
             }
-            row.innerHTML = html;
         };
         window.clickSlot = function(){
             var sh = document.getElementById('photoSheet');
@@ -3080,7 +3122,7 @@ body {
             if (!file || pubPhotos.length >= 3) return;
             var reader = new FileReader();
             reader.onload = function(){
-              // canvas 压缩：最长边 1280、JPEG 0.8（防 localStorage 超限）
+              // canvas 压缩：最长边 1280、JPEG 0.8；2.1 起照片 Blob 存 IndexedDB，pubPhotos 只存引用 key
               var img = new Image();
               img.onload = function(){
                 var maxW = 1280;
@@ -3090,9 +3132,15 @@ body {
                 var cv = document.createElement('canvas');
                 cv.width = w; cv.height = hh;
                 cv.getContext('2d').drawImage(img, 0, 0, w, hh);
-                var url = cv.toDataURL('image/jpeg', 0.8);
-                pubPhotos.push(url);
-                renderPhotoSlots();
+                var dataURL = cv.toDataURL('image/jpeg', 0.8);
+                var blob = window.__dataURLtoBlob(dataURL);
+                if (PHO_DB_OK && blob){
+                  var pid = window.__newPhotoId();
+                  window.__phoPut(pid, blob).then(function(){ pubPhotos.push(pid); renderPhotoSlots(); },
+                                                  function(){ pubPhotos.push(dataURL); renderPhotoSlots(); }); // IDB 写失败回退 base64（老行为）
+                } else {
+                  pubPhotos.push(dataURL); renderPhotoSlots();
+                }
               };
               img.onerror = function(){ pubPhotos.push(reader.result); renderPhotoSlots(); };
               img.src = reader.result;
@@ -3102,7 +3150,10 @@ body {
             window.showToast('📷 照片已添加');
         };
         window.removePhoto = function(i){
+            var ref = pubPhotos[i];
             pubPhotos.splice(i, 1);
+            // 2.1：移除的是未发布照片，其 IDB Blob 一并清理（已发布日志的照片不受影响）
+            if (ref && String(ref).indexOf('data:') !== 0 && window.__phoDel) window.__phoDel(ref).catch(function(){});
             renderPhotoSlots();
             window.showToast('已移除照片');
         };
@@ -3143,7 +3194,12 @@ body {
             if (i >= pubPhotos.length) i = 0;
             smCur = i;
             var cnt = pubPhotos.length > 1 ? '<span class="sm-count">' + (i + 1) + ' / ' + pubPhotos.length + '</span>' : '';
-            ph.innerHTML = '<img src="' + pubPhotos[i] + '" alt="照片预览">' + cnt;
+            ph.innerHTML = '<img alt="照片预览">' + cnt;
+            // 2.1：引用异步解析（photoId→IDB；data: 直通）
+            window.__resolvePhoto(pubPhotos[i], function(u){
+                var im = ph.querySelector('img');
+                if (im && u) im.src = u;
+            });
         }
         window.openSummary = function(){
             // 照片（发布页已上传的）
@@ -3208,9 +3264,83 @@ body {
             var logs = STORE.get('logs', []);
             logs.unshift({ id: Date.now(), text: text, mood: mood, kcal: kcal, acts: acts, dur: dur, time: Date.now(), photos: (typeof pubPhotos !== 'undefined' ? pubPhotos.slice() : []) });
             STORE.set('logs', logs.slice(0, 300));
+            // 2.1：照片云同步——后台异步补传本条日志的新照片（不阻塞发布）
+            try { if (window.__photoPush) window.__photoPush(logs[0].photos); } catch(e){}
             window.closeSummaryModal();
             window.showToast('✅ 已发布训练日志');
             if (typeof renderLogWall === 'function') renderLogWall();
+        };
+        // ── 2.1：照片存储迁 IndexedDB（防 localStorage 5MB 配额顶爆后静默停存）──
+        // 库 gorun-photos / store photos（keyPath 'id'）；日志里只存引用 key，Blob 本地存放。
+        // 兼容：旧日志 photos 里可能还是 data: 开头的 base64，读取时两种都认（__resolvePhoto 统一入口）。
+        var PHO_DB_OK = !!window.indexedDB;
+        function phoOpen(){
+            return new Promise(function(res, rej){
+                if (!PHO_DB_OK) return rej(new Error('indexedDB 不可用'));
+                var rq = indexedDB.open('gorun-photos', 1);
+                rq.onupgradeneeded = function(){ rq.result.createObjectStore('photos', { keyPath: 'id' }); };
+                rq.onsuccess = function(){ res(rq.result); };
+                rq.onerror = function(){ rej(rq.error); };
+            });
+        }
+        function phoReq(db, mode, fn){
+            return new Promise(function(res, rej){
+                var rq = fn(db.transaction('photos', mode).objectStore('photos'));
+                rq.onsuccess = function(){ db.close(); res(rq.result); };
+                rq.onerror = function(){ db.close(); rej(rq.error); };
+            });
+        }
+        window.__phoPut = function(id, blob){ return phoOpen().then(function(db){ return phoReq(db, 'readwrite', function(s){ return s.put({ id: id, blob: blob }); }); }); };
+        window.__phoGet = function(id){ return phoOpen().then(function(db){ return phoReq(db, 'readonly', function(s){ return s.get(id); }); }); };
+        window.__phoDel = function(id){ return phoOpen().then(function(db){ return phoReq(db, 'readwrite', function(s){ return s.delete(id); }); }); };
+        // 引用 → 可显示 URL：data: 直接给；photoId 从 IDB 取 Blob 转 objectURL；取不到给 null（调用方显示占位）
+        window.__resolvePhoto = function(ref, cb){
+            if (!ref) return cb(null);
+            if (String(ref).indexOf('data:') === 0) return cb(ref);
+            if (!PHO_DB_OK) return cb(null);
+            window.__phoGet(ref).then(function(rec){
+                if (rec && rec.blob){ try { cb(URL.createObjectURL(rec.blob)); return; } catch(e){} }
+                cb(null);
+            }).catch(function(){ cb(null); });
+        };
+        window.__dataURLtoBlob = function(dataURL){
+            try {
+                var parts = String(dataURL).split(',');
+                var mime = (parts[0].match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+                var bin = atob(parts[1]);
+                var arr = new Uint8Array(bin.length);
+                for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+                return new Blob([arr], { type: mime });
+            } catch(e){ return null; }
+        };
+        window.__newPhotoId = function(){ return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); };
+        // 2.1：旧日志照片一次性迁移 base64 → IDB（成功才打标记；IDB 不可用/失败下次启动重试）
+        window.__migratePhotos = function(){
+            try {
+                if (!PHO_DB_OK || localStorage.getItem('gorun_photoMigrated') === '1') return;
+                var logs = STORE.get('logs', []) || [];
+                var pending = 0, touched = false;
+                var done = function(){
+                    if (!pending){
+                        try { if (touched) STORE.set('logs', logs); } catch(e){}
+                        try { localStorage.setItem('gorun_photoMigrated', '1'); } catch(e){}
+                        if (touched && typeof renderLogWall === 'function') renderLogWall();
+                    }
+                };
+                logs.forEach(function(g){
+                    if (!g.photos || !g.photos.length) return;
+                    g.photos.forEach(function(ref, pi){
+                        if (String(ref).indexOf('data:') !== 0) return;
+                        var blob = window.__dataURLtoBlob(ref);
+                        if (!blob) return;
+                        pending++;
+                        var id = window.__newPhotoId();
+                        window.__phoPut(id, blob).then(function(){ g.photos[pi] = id; touched = true; pending--; done(); },
+                                                        function(){ pending--; done(); });
+                    });
+                });
+                done();
+            } catch(e){}
         };
         // ── 个人页：训练日志瀑布流（J2 小红书式） ──
         // 2.0：HTML 转义助手——日志文本/标题/封面名等拼 HTML 前一律过 esc（防 XSS）
@@ -3225,14 +3355,7 @@ body {
           '突破自我': { emoji: '🎉', svg: '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#E0B23E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 6.9 7.3.2-5.8 4.4 2.1 7-6-4.2-6 4.2 2.1-7L2.3 10l7.3-.2z"/></svg>', grad: 'linear-gradient(160deg,#F5FFE3,#E6FFB8)' }
         };
         var MOOD_DEFAULT = { emoji: '🏋️', svg: '<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#B99AF8" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><path d="M12 8v8M8 12h8"/></svg>', grad: 'linear-gradient(160deg,#F3EFFF,#E0D5FF)' };
-        var WALL_MOCK = [
-          { mood: '训练完成', text: '核心日 · 卷腹4组+平板支撑' },
-          { mood: '有氧打卡', text: '晨跑 5 公里 · 配速 6分20秒' },
-          { mood: '突破自我', text: '硬拉 60kg 新纪录' },
-          { mood: '拉伸放松', text: '泡沫轴放松 · 肩颈终于松了' },
-          { mood: '训练完成', text: 'HIIT 20 分钟 · 汗如雨下' },
-          { mood: '有氧打卡', text: '游泳 800 米 · 自由泳' }
-        ];
+        // 2.0：WALL_MOCK（六条假日志样板文案）已删——项目不预置任何训练数据
         window.renderLogWall = function(){
           var wall = document.getElementById('logWall');
           var cnt = document.getElementById('wallCount');
@@ -3248,11 +3371,19 @@ body {
           wall.innerHTML = shown.map(function(g){
             var meta = MOOD_META[g.mood] || MOOD_DEFAULT;
             var title = window.__esc((g.text || '记录了一次训练').split('\n')[0]);
-            var ph = (g.photos && g.photos.length) ? '<img src="' + window.__esc(g.photos[0]) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">' : '<span style="width:34px;height:34px;display:block;margin:0 auto;">' + (meta.svg || meta.emoji) + '</span>';
+            // 2.1：照片是引用 key，先渲染占位 img（data-phoref），innerHTML 后异步取图填充
+            var ph = (g.photos && g.photos.length) ? '<img alt="" data-phoref="' + window.__esc(String(g.photos[0])) + '" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">' : '<span style="width:34px;height:34px;display:block;margin:0 auto;">' + (meta.svg || meta.emoji) + '</span>';
             return '<div class="J2-card" onclick="window.openLogDetail(' + g.id + ')"><div class="pic" style="background:' + meta.grad + ';">' + ph + '</div><div class="bd"><div class="t">' + title + '</div></div></div>';
           }).join('');
+          Array.prototype.forEach.call(wall.querySelectorAll('img[data-phoref]'), function(im){
+            window.__resolvePhoto(im.getAttribute('data-phoref'), function(u){
+              if (u) im.src = u; // 取不到（如照片只存在另一台设备）保留渐变底占位
+            });
+          });
         };
         renderLogWall();
+        // 2.1：启动时把旧 base64 照片一次性搬进 IndexedDB（成功才打标记，下次不再跑）
+        window.__migratePhotos();
         // ── 全屏日志详情 ──
         var LGD = { idx: -1, logs: null };
         var LGD_META = {
@@ -3297,14 +3428,14 @@ body {
           document.getElementById('lgdData').innerHTML = data;
           document.getElementById('lgdTime').textContent = fmtLogHM(g.time);
           document.getElementById('lgdOverlay').style.display = 'block';
-            window.__openLayer(function(){ document.getElementById('lgdOverlay').style.display = 'none'; document.getElementById('lgdPop').classList.remove('show'); LGD.photos = null; });
+            window.__openLayer(function(){ document.getElementById('lgdOverlay').style.display = 'none'; document.getElementById('lgdPop').classList.remove('show'); if (LGD._url){ try { URL.revokeObjectURL(LGD._url); } catch(e){} LGD._url = null; } LGD.photos = null; });
         };
         function showLgdPhoto(i, dir){
           if (!LGD.photos || !LGD.photos.length) return;
           var n = LGD.photos.length;
           LGD.cur = ((i % n) + n) % n;
           var main = document.getElementById('lgdMain');
-          var html = '<img src="' + LGD.photos[LGD.cur] + '" alt="">';
+          var html = '<img alt="">';
           if (dir === undefined){
             main.style.transition = 'none';
             main.style.opacity = '1';
@@ -3321,6 +3452,12 @@ body {
             main.style.opacity = '1';
             main.style.transform = 'translateX(0)';
           }
+          // 2.1：引用异步解析（photoId→IDB Blob→objectURL；旧 data: 直通）；换图时回收上一个 objectURL
+          if (LGD._url){ try { URL.revokeObjectURL(LGD._url); } catch(e){} LGD._url = null; }
+          window.__resolvePhoto(LGD.photos[LGD.cur], function(u){
+            var im = main.querySelector('img');
+            if (im && u){ im.src = u; if (String(u).indexOf('blob:') === 0) LGD._url = u; }
+          });
           document.getElementById('lgdCnt').textContent = (LGD.cur + 1) + ' / ' + n;
         }
         (function(){
@@ -3931,7 +4068,7 @@ body {
 (function(){
   var SB_URL = 'https://ljzawblcyuwvioazjhiv.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxqemF3YmxjeXV3dmlvYXpqaGl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MzY0NDAsImV4cCI6MjEwMjAxMjQ0MH0._osewlf207aS9K78wdDt1EoZbrlIzfcfr2suenWFe4E';
-  var KEYS = ['tdWorkouts', 'logs', 'recent', 'recoHidden', 'bodyMetrics', 'diet']; // 2.0 修复：logs/recent/bodyMetrics/diet 纳入云同步；tdCompleted 已并入 tdWorkouts 的 done 字段
+  var KEYS = ['tdWorkouts', 'logs', 'recent', 'recoHidden', 'bodyMetrics', 'diet', 'steps']; // 2.0 修复：logs/recent/bodyMetrics/diet/steps 纳入云同步；tdCompleted 已并入 tdWorkouts 的 done 字段
   var session = null;
   var pushTimer = null;
 
@@ -4042,7 +4179,7 @@ body {
 
   function pullMerge(){
     if (!session) return Promise.resolve();
-    return api('/rest/v1/go_run_data?select=data_key,data,updated_at&user_id=eq.' + session.uid).then(function(r){
+    return api('/rest/v1/go_run_data?select=data_key,data,updated_at&user_id=eq.' + session.uid + '&data_key=not.like.photo:*').then(function(r){
       if (!r.ok) return;
       (r.body || []).forEach(function(row){
         var localTs = tsGet(row.data_key);
@@ -4061,6 +4198,8 @@ body {
       try { if (typeof tdRenderList === 'function') tdRenderList(); } catch(e){}
       try { if (typeof tdUpdateProgress === 'function') tdUpdateProgress(); } catch(e){}
       var st = document.getElementById('acctSyncState'); if (st) st.textContent = '已同步';
+      // 2.1：合并后跑一次照片云同步对账（补传云端缺失的照片行）
+      try { if (window.__photoSyncPending) window.__photoSyncPending(); } catch(e){}
     });
   }
 
@@ -4133,6 +4272,95 @@ body {
   };
 
   window.__syncPush = schedulePush;
+
+  // ===== 2.1：照片云同步（走 go_run_data 表，零后台配置）=====
+  // 每张照片一行：data_key='photo:'+photoId，data={d:dataURL}；RLS 按 user_id 隔离（表现成）。
+  // 云 = 二级缓存：本地 IDB miss 才按需拉单张回填；发布后后台补传；登录/合并后对账补漏。
+  // 容量保险：>800KB 的 dataURL 不上云（静默留本地），500MB 数据库 ≈ 1500-3000 张照片。
+  var PHO_PUSH_MAX = 800 * 1024;
+  var phoSyncBusy = false;
+  function blobToDataURL(blob){
+    return new Promise(function(res){
+      try {
+        var fr = new FileReader();
+        fr.onload = function(){ res(fr.result); };
+        fr.onerror = function(){ res(null); };
+        fr.readAsDataURL(blob);
+      } catch(e){ res(null); }
+    });
+  }
+  // 批量把照片引用传云端（refs = photoId；从 IDB 取 Blob 转回 dataURL；data: 引用自包含不处理）
+  window.__photoPush = function(refs){
+    if (!session || !refs || !refs.length) return Promise.resolve();
+    var ids = [];
+    refs.forEach(function(r){
+      r = String(r || '');
+      if (r && r.indexOf('data:') !== 0 && ids.indexOf(r) < 0) ids.push(r);
+    });
+    if (!ids.length) return Promise.resolve();
+    return Promise.all(ids.map(function(id){
+      return window.__phoGet(id).then(function(rec){
+        if (!rec || !rec.blob) return null;
+        return blobToDataURL(rec.blob).then(function(d){
+          return (d && d.length <= PHO_PUSH_MAX) ? { user_id: session.uid, data_key: 'photo:' + id, data: { d: d }, updated_at: new Date().toISOString() } : null;
+        });
+      }).catch(function(){ return null; });
+    })).then(function(rows){
+      rows = rows.filter(Boolean);
+      if (!rows.length) return;
+      return api('/rest/v1/go_run_data?on_conflict=user_id,data_key', {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates' },
+        body: rows
+      }).catch(function(){}); // 上传失败静默（下次发布/登录对账自动补传）
+    }).catch(function(){});
+  };
+  // IDB miss → 云上按需拉单张 → 回填 IDB（包装主 IIFE 里的原 __resolvePhoto）
+  window.__resolvePhoto = (function(orig){
+    return function(ref, cb){
+      orig(ref, function(u){
+        if (u || !session || !ref || String(ref).indexOf('data:') === 0 || !window.__phoPut) return cb(u || null);
+        api('/rest/v1/go_run_data?select=data&data_key=eq.photo:' + ref).then(function(r){
+          var d = (r && r.ok && r.body && r.body[0] && r.body[0].data && r.body[0].data.d) || null;
+          if (!d) return cb(null);
+          var blob = window.__dataURLtoBlob(d);
+          if (!blob) return cb(d); // Blob 转不动就直接给 dataURL（至少能显示）
+          window.__phoPut(ref, blob).then(function(){ cb(URL.createObjectURL(blob)); }, function(){ cb(d); });
+        }).catch(function(){ cb(null); });
+      });
+    };
+  })(window.__resolvePhoto);
+  // 对账补漏：日志里引用了但云端还没有的照片行 → 补传（photoId 按批 50 个查远端存在性）
+  window.__photoSyncPending = function(){
+    if (!session || phoSyncBusy) return Promise.resolve();
+    var logs = lsGet('logs') || [];
+    var refs = [];
+    logs.forEach(function(g){
+      (g.photos || []).forEach(function(r){
+        r = String(r || '');
+        if (r && r.indexOf('data:') !== 0 && refs.indexOf(r) < 0) refs.push(r);
+      });
+    });
+    if (!refs.length) return Promise.resolve();
+    phoSyncBusy = true;
+    var have = {};
+    var batches = [];
+    for (var i = 0; i < refs.length; i += 50) batches.push(refs.slice(i, i + 50));
+    var chain = Promise.resolve();
+    batches.forEach(function(b){
+      chain = chain.then(function(){
+        var q = b.map(function(r){ return '"photo:' + r + '"'; }).join(',');
+        return api('/rest/v1/go_run_data?select=data_key&data_key=in.(' + q + ')').then(function(r){
+          ((r && r.body) || []).forEach(function(row){ have[row.data_key] = 1; });
+        }).catch(function(){});
+      });
+    });
+    return chain.then(function(){
+      var missing = refs.filter(function(r){ return !have['photo:' + r]; });
+      phoSyncBusy = false;
+      if (missing.length) window.__photoPush(missing);
+    }).catch(function(){ phoSyncBusy = false; });
+  };
 
   // 启动：恢复登录状态（token 过期自动用 refresh_token 续期）
   (function(){
