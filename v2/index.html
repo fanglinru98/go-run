@@ -1489,6 +1489,8 @@ body {
 .cal-cell.sel .cd{color:var(--accent-ink);font-weight:700}
 .cal-cell.sel .cn{color:var(--accent-ink);font-weight:800}
 .cal-cell.sel .dot{background:#fff}
+.cal-cell.fut{opacity:.22;pointer-events:none} /* 2.1（甲方意见①）：本月未来日期置灰 */
+.cal-cell.fut .cd,.cal-cell.fut .cn{color:var(--text-3)}
 
 /* 今日消耗（方案B卡片） */
 .ring-hero{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:12px;padding:20px 16px 16px;background:var(--surface);border:1px solid rgba(255,255,255,.85);border-radius:var(--r-lg);box-shadow:0 8px 24px rgba(31,38,135,.08);backdrop-filter:blur(16px)}
@@ -1971,7 +1973,7 @@ body {
                         <div class="stat"><div class="si" style="background:linear-gradient(135deg,#FFF3C4,#FFD24A);"><svg viewBox="0 0 24 24" fill="none" stroke="#C8961E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M8.5 13 7 21l5-2.5L17 21l-1.5-8"/></svg></div><div class="tx"><b id="stTotal">0</b><span>累计打卡</span></div></div>
                     </div>
                     <div class="cal">
-                        <div class="mt"><span id="miniCalMonth">--</span></div>
+                        <div class="mt"><button onclick="window.__pcNav(-1)" aria-label="上一月" style="border:none;background:none;font-family:inherit;font-size:18px;line-height:1;color:var(--text-3);padding:2px 10px;cursor:pointer;">‹</button><span id="miniCalMonth">--</span><button onclick="window.__pcNav(1)" aria-label="下一月" style="border:none;background:none;font-family:inherit;font-size:18px;line-height:1;color:var(--text-3);padding:2px 10px;cursor:pointer;">›</button></div>
                         <div class="wd"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
                         <div class="g" id="miniCalGrid"></div>
                     </div>
@@ -2011,7 +2013,7 @@ body {
     <!-- ===== 课程详情页（跟练 V2） ===== -->
     <div class="detail-overlay" id="detailOverlay">
         <div class="detail-page">
-            <div class="detail-top">
+            <div class="detail-top" onclick="if(event.target===this)window.closeDetail()">
                 <button class="detail-back" onclick="window.closeDetail()">‹</button>
                 <div style="display:flex;gap:10px;align-items:center;">
                     <button class="detail-add" id="detailAdd" onclick="window.detailAddToday()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -2043,6 +2045,7 @@ body {
         <div class="vfp-top">
             <button class="vfp-back" onclick="window.closeVideoPlayer()">←</button>
             <div class="vfp-title" id="vfpTitle"></div>
+            <button class="vfp-back" style="margin-left:10px" onclick="window.__vfpLandscape()" aria-label="横屏">⛶</button>
         </div>
         <div class="vfp-wrap"><span class="vfp-tip" id="vfpTip"></span><iframe id="vfpVideo" src="" allowfullscreen webkitallowfullscreen mozallowfullscreen allow="autoplay; fullscreen; encrypted-media"></iframe></div>
     </div>
@@ -2307,14 +2310,16 @@ body {
     row.innerHTML = '';
     var n = new Date();
     var ym = n.getFullYear() + '-' + TD_PAD(n.getMonth() + 1) + '-';
+    var todayN = n.getDate(); // 2.1（甲方意见①）：本月未来日期置灰不可点
     tdDates.forEach(function(d){
       var on = tdSelected === d.date;
+      var fut = parseInt(d.date, 10) > todayN;
       var hasDone = tdWorkouts.some(function(w){ return w.done && w.date === ym + TD_PAD(parseInt(d.date, 10)); }); // 2.0：圆点=该日确有已完成（原先写死 false 永远是灰的）
       var b = document.createElement('button');
-      b.className = 'cal-cell' + (on ? ' sel' : '');
-      b.setAttribute('aria-label', d.day + ' ' + d.date + '日');
+      b.className = 'cal-cell' + (on ? ' sel' : '') + (fut ? ' fut' : '');
+      b.setAttribute('aria-label', d.day + ' ' + d.date + '日' + (fut ? '（未到来）' : ''));
       b.innerHTML = '<span class="cd">' + d.day + '</span><span class="cn">' + d.date + '</span>' + (hasDone ? '<span class="dot"></span>' : '');
-      b.onclick = function(){ tdSelected = d.date; tdRenderCal(); tdUpdateProgress(); }; // 2.0：进度按所选日期实时切换
+      if (!fut) b.onclick = function(){ tdSelected = d.date; tdRenderCal(); tdUpdateProgress(); }; // 2.0：进度按所选日期实时切换；未来日期不给点
       row.appendChild(b);
     });
   }
@@ -2976,21 +2981,30 @@ body {
         }
 
         // ── Profile page init（2.0：真实当月月历 + 真实统计 + 登录态头部） ──
+        // 2.1（甲方意见③）：个人页月历可翻月——原先写死当月，看不到历史/下月
+        var pcY = new Date().getFullYear(), pcM = new Date().getMonth();
+        window.__pcNav = function(delta){
+            pcM += delta;
+            if (pcM < 0){ pcM = 11; pcY--; }
+            if (pcM > 11){ pcM = 0; pcY++; }
+            renderProfileCalendar();
+        };
         function renderProfileCalendar() {
             var grid = document.getElementById('miniCalGrid');
             if (!grid) return;
             var n = new Date();
-            var y = n.getFullYear(), m = n.getMonth();
+            var y = pcY, m = pcM;
             var ym = y + '-' + TD_PAD(m + 1) + '-';
             var doneSet = {};
             tdWorkouts.forEach(function(w){ if (w.done && w.date && w.date.indexOf(ym) === 0){ var dd = parseInt(w.date.slice(8), 10); doneSet[dd] = (doneSet[dd] || 0) + 1; } });
             var title = document.getElementById('miniCalMonth');
-            if (title) title.textContent = (m + 1) + '月';
+            if (title) title.textContent = (y === n.getFullYear()) ? (m + 1) + '月' : y + '年' + (m + 1) + '月';
             var firstDay = new Date(y, m, 1).getDay();   // 0=周日
             var lead = (firstDay + 6) % 7;               // 周一开头
             var days = new Date(y, m + 1, 0).getDate();
             var prevDays = new Date(y, m, 0).getDate();
-            var today = n.getDate();
+            var isCur = (y === n.getFullYear() && m === n.getMonth());
+            var today = isCur ? n.getDate() : -1;        // today 高亮只在当前月生效
             var html = '';
             for (var p = lead - 1; p >= 0; p--) html += '<span class="d dim">' + (prevDays - p) + '</span>';
             for (var d = 1; d <= days; d++){
@@ -3644,9 +3658,31 @@ body {
             document.getElementById('videoFullPlayer').classList.add('show');
             window.__openLayer(function(){ document.getElementById('videoFullPlayer').classList.remove('show'); document.getElementById('vfpVideo').src = ''; });
             var tip = document.getElementById('vfpTip');
-            if (tip) tip.textContent = '点击播放器右下角 ⛶ 可全屏观看（横屏更佳）';
+            if (tip) tip.textContent = '点击播放器右下角 ⛶ 全屏；不横屏时点右上角 ⛶ 锁定横屏（或检查系统竖排方向锁）';
         };
         window.closeVideoPlayer = function(){ window.__closeTop(); };
+        // 2.1（甲方意见⑤）：「全屏不横屏」——iframe 的 allowfullscreen 属性本来就齐全，横屏与否取决于系统旋转锁，
+        // 网页无法强制；给一个尽力而为的横屏按钮：Android Chrome 可整层全屏+方向锁定，iOS 不支持元素全屏则提示手动关竖排锁。
+        window.__vfpLandscape = function(){
+            var player = document.getElementById('videoFullPlayer');
+            if (document.fullscreenElement || document.webkitFullscreenElement){
+                try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch(e){}
+                return; // 已在全屏 = 再点一次退出
+            }
+            var lock = function(){
+                try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); } catch(e){}
+            };
+            var req = player && (player.requestFullscreen || player.webkitRequestFullscreen);
+            if (req){
+                try {
+                    var p = req.call(player);
+                    if (p && p.then) p.then(lock).catch(function(){ window.showToast('当前浏览器不支持横屏锁定'); });
+                    else lock();
+                } catch(e){ window.showToast('当前浏览器不支持横屏锁定'); }
+            } else {
+                window.showToast('当前浏览器不支持横屏锁定，可关闭系统竖排方向锁后横屏观看');
+            }
+        };
 
         // ── Follow page course filter ──
         window.filterCourses = function(cat) {
@@ -4013,6 +4049,56 @@ body {
             loadCardioPresets();
             loadPresets('chest');
         };
+        // 2.1 修复（甲方意见②）：“+”弹窗的力量/有氧下拉点开是空的——预设数据原本定义在已归档的 js/data.js，
+        // 批次1卸载死脚本时把数据源一并带走（loadPresets/loadCardioPresets 只剩空数组）。按归档原件原样内联恢复。
+        window.strengthPresets = {
+            chest: [
+                { name: '平板卧推', groups: 4, reps: 10, weight: 50 },
+                { name: '上斜卧推', groups: 4, reps: 10, weight: 40 },
+                { name: '哑铃飞鸟', groups: 3, reps: 12, weight: 16 },
+                { name: '绳索夹胸', groups: 3, reps: 15, weight: 20 },
+            ],
+            back: [
+                { name: '高位下拉', groups: 4, reps: 10, weight: 50 },
+                { name: '杠铃划船', groups: 4, reps: 10, weight: 45 },
+                { name: '引体向上', groups: 3, reps: 8, weight: 0 },
+                { name: '坐姿划船', groups: 3, reps: 12, weight: 40 },
+            ],
+            legs: [
+                { name: '杠铃深蹲', groups: 4, reps: 10, weight: 60 },
+                { name: '腿举', groups: 4, reps: 12, weight: 80 },
+                { name: '罗马尼亚硬拉', groups: 3, reps: 10, weight: 50 },
+                { name: '腿弯举', groups: 3, reps: 12, weight: 35 },
+            ],
+            shoulders: [
+                { name: '哑铃推举', groups: 4, reps: 10, weight: 20 },
+                { name: '侧平举', groups: 3, reps: 15, weight: 8 },
+                { name: '面拉', groups: 3, reps: 15, weight: 15 },
+                { name: '杠铃推举', groups: 4, reps: 8, weight: 40 },
+            ],
+            arms: [
+                { name: '杠铃弯举', groups: 3, reps: 12, weight: 25 },
+                { name: '绳索下压', groups: 3, reps: 15, weight: 20 },
+                { name: '锤式弯举', groups: 3, reps: 12, weight: 14 },
+                { name: '窄距卧推', groups: 3, reps: 10, weight: 40 },
+            ],
+            core: [
+                { name: '卷腹', groups: 3, reps: 20, weight: 0 },
+                { name: '平板支撑', groups: 3, reps: 60, weight: 0 },
+                { name: '悬垂举腿', groups: 3, reps: 12, weight: 0 },
+                { name: '俄罗斯转体', groups: 3, reps: 20, weight: 5 },
+            ],
+        };
+        window.cardioPresets = [
+            { name: '跑步', duration: 30, distance: 5.0, calories: 280 },
+            { name: '爬坡', duration: 20, distance: 0, calories: 150 },
+            { name: '骑行', duration: 45, distance: 15.0, calories: 350 },
+            { name: '游泳', duration: 30, distance: 1.0, calories: 300 },
+            { name: '跳绳', duration: 15, distance: 0, calories: 180 },
+            { name: '椭圆机', duration: 30, distance: 3.0, calories: 250 },
+            { name: '划船机', duration: 20, distance: 2.0, calories: 200 },
+            { name: 'HIIT', duration: 20, distance: 0, calories: 320 },
+        ];
         function loadPresets(part) {
             var presets = (window.strengthPresets || {})[part] || [];
             var drop = document.getElementById('presetDrop');

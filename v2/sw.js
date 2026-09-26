@@ -5,7 +5,7 @@
 // 注意：SW 只在 HTTPS 或 localhost 生效，file:// 打开自动跳过（页面侧已做判断）
 // 2.0-v2 变更：css/style.css 与 js/*（旧多页架构死代码）已从页面移除并归档，PRECACHE 同步缩减为 12 项
 // ================================================================
-const CACHE_VER = 'gorun2-v5';
+const CACHE_VER = 'gorun2-v6';
 const PRECACHE = [
   './',
   './index.html',
